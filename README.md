@@ -129,9 +129,9 @@ To make this magic happen, you need some code like this:
 
 ```
     const XlsxTemplate = require('xlsx-template');
-	const fs = require('fs');
+    const fs = require('fs');
  
-	let filename = path.join(__dirname, 'templates', 'template1.xlsx');
+    let filename = path.join(__dirname, 'templates', 'template1.xlsx');
 
 	// Load an XLSX file into memory
     fs.readFile(filename, function(err, data) {
