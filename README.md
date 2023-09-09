@@ -128,41 +128,41 @@ You can pass imageRatio option for adjust the ratio image (in percent and for st
 To make this magic happen, you need some code like this:
 
 ```
-	const XlsxTemplate = require('xlsx-template');
-	const fs = require('fs');
+const XlsxTemplate = require('xlsx-template');
+const fs = require('fs');
 
-	let filename = path.join(__dirname, 'templates', 'template1.xlsx');
+let filename = path.join(__dirname, 'templates', 'template1.xlsx');
 
-	// Load an XLSX file into memory
-	fs.readFile(filename, function(err, data) {
-		// Create a template
-		let template = new XlsxTemplate(data);
+// Load an XLSX file into memory
+fs.readFile(filename, function(err, data) {
+	// Create a template
+	let template = new XlsxTemplate(data);
 
-		// Replacements take place on first sheet
-		let sheetNumber = 1;
+	// Replacements take place on first sheet
+	let sheetNumber = 1;
 
-		// Set up some placeholder values matching the placeholders in the template
-		let data = {
-			extractDate: new Date(),
-			dates: [ 
-				new Date('2013-06-01'), 
-				new Date('2013-06-02'), 
-				new Date('2013-06-03')
-			],
-			people: [
-				{ name: 'John Smith', age: 20 },
-				{ name: 'Bob Johnson', age: 22 }
-			]
-		};
+	// Set up some placeholder values matching the placeholders in the template
+	let data = {
+		extractDate: new Date(),
+		dates: [ 
+			new Date('2013-06-01'), 
+			new Date('2013-06-02'), 
+			new Date('2013-06-03')
+		],
+		people: [
+			{ name: 'John Smith', age: 20 },
+			{ name: 'Bob Johnson', age: 22 }
+		]
+	};
 
-		// Perform substitution
-		template.substitute(sheetNumber, data);
+	// Perform substitution
+	template.substitute(sheetNumber, data);
 
-		// Get binary data
-		let buffer = template.generate({ type: 'uint8array' });
+	// Get binary data
+	let buffer = template.generate({ type: 'uint8array' });
 
-		// Your code...
-	});
+	// Your code...
+});
 ```
 
 At this stage, `data` is a string blob representing the compressed archive that
