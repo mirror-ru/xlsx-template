@@ -6,7 +6,7 @@ var path = require('path'),
     sizeOf = require('image-size').imageSize,
     fs = require('fs'),
     etree = require('elementtree'),
-    zip = require("jszip");
+    JSZip = require("jszip");
 
 var DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
     CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
@@ -46,7 +46,7 @@ class Workbook {
      * Create a new workbook. Either pass the raw data of a .xlsx file,
      * or call `loadTemplate()` later.
      */
-    constructor(data, option = {}) {
+    constructor(option = {}) {
         this.archive = null;
         this.sharedStrings = [];
         this.sharedStringsLookup = {};
@@ -70,17 +70,13 @@ class Workbook {
         this.workbookRels = null;
         this.calChainRel = null;
         this.calcChainPath = "";
-
-        if (data) {
-            this.loadTemplate(data);
-        }
     }
     /**
      * Delete unused sheets if needed
      */
-    deleteSheet(sheetName) {
+    async deleteSheet(sheetName) {
         var self = this;
-        var sheet = self.loadSheet(sheetName);
+        var sheet = await self.loadSheet(sheetName);
 
         var sh = self.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
         self.workbook.find("sheets").remove(sh);
@@ -94,15 +90,14 @@ class Workbook {
     /**
      * Clone sheets in current workbook template
      */
-    copySheet(sheetName, copyName, binary = true) {
+    async copySheet(sheetName, copyName) {
         var self = this;
-        var sheet = self.loadSheet(sheetName); //filename, name , id, root
+        var sheet = await self.loadSheet(sheetName); //filename, name , id, root
         var newSheetIndex = (self.workbook.findall("sheets/sheet").length + 1).toString();
         var fileName = 'worksheets' + '/' + 'sheet' + newSheetIndex + '.xml';
         var arcName = self.prefix + '/' + fileName;
         // Copy sheet file
         self.archive.file(arcName, etree.tostring(sheet.root));
-        self.archive.files[arcName].options.binary = binary;
         // copy sheet name in workbook
         var newSheet = etree.SubElement(self.workbook.find('sheets'), 'sheet');
         newSheet.attrib.name = copyName || 'Sheet' + newSheetIndex;
@@ -125,7 +120,6 @@ class Workbook {
         var relFileName = 'worksheets' + '/_rels/' + 'sheet' + newSheetIndex + '.xml.rels';
         var relArcName = self.prefix + '/' + relFileName;
         self.archive.file(relArcName, etree.tostring(self.loadSheetRels(sheet.filename).root));
-        self.archive.files[relArcName].options.binary = true;
 
         self._rebuild();
         return self;
@@ -175,48 +169,53 @@ class Workbook {
     /**
      * Load a .xlsx file from a byte array.
      */
-    loadTemplate(data) {
+    async loadTemplate(data) {
         var self = this;
 
         if (Buffer.isBuffer(data)) {
             data = data.toString('binary');
         }
 
-        self.archive = new zip(data, { base64: false, checkCRC32: true });
+		self.archive = await JSZip.loadAsync(data, { base64: false, checkCRC32: true });
 
-        // Load relationships
-        var rels = etree.parse(self.archive.file("_rels/.rels").asText()).getroot(), workbookPath = rels.find("Relationship[@Type='" + DOCUMENT_RELATIONSHIP + "']").attrib.Target;
+		// Load relationships
+		let parseTextRels = await self.archive.file("_rels/.rels").async('string');
+		var rels = etree.parse(parseTextRels).getroot(), workbookPath = rels.find("Relationship[@Type='" + DOCUMENT_RELATIONSHIP + "']").attrib.Target;
 
-        self.workbookPath = workbookPath;
-        self.prefix = path.dirname(workbookPath);
-        self.workbook = etree.parse(self.archive.file(workbookPath).asText()).getroot();
-        self.workbookRels = etree.parse(self.archive.file(self.prefix + "/" + '_rels' + "/" + path.basename(workbookPath) + '.rels').asText()).getroot();
-        self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
-        self.calChainRel = self.workbookRels.find("Relationship[@Type='" + CALC_CHAIN_RELATIONSHIP + "']");
+		self.workbookPath = workbookPath;
+		self.prefix = path.dirname(workbookPath);
+		let parseTextWB = await self.archive.file(workbookPath).async('string');
+		self.workbook = etree.parse(parseTextWB).getroot();
+		let parseTextWBRels = await self.archive.file(self.prefix + "/" + '_rels' + "/" + path.basename(workbookPath) + '.rels').async('string');
+		self.workbookRels = etree.parse(parseTextWBRels).getroot();
+		self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
+		self.calChainRel = self.workbookRels.find("Relationship[@Type='" + CALC_CHAIN_RELATIONSHIP + "']");
 
-        if (self.calChainRel) {
-            self.calcChainPath = self.prefix + "/" + self.calChainRel.attrib.Target;
-        }
+		if (self.calChainRel) {
+			self.calcChainPath = self.prefix + "/" + self.calChainRel.attrib.Target;
+		}
 
-        self.sharedStringsPath = self.prefix + "/" + self.workbookRels.find("Relationship[@Type='" + SHARED_STRINGS_RELATIONSHIP + "']").attrib.Target;
-        self.sharedStrings = [];
-        etree.parse(self.archive.file(self.sharedStringsPath).asText()).getroot().findall('si').forEach(function (si) {
-            var t = { text: '' };
-            si.findall('t').forEach(function (tmp) {
-                t.text += tmp.text;
-            });
-            si.findall('r/t').forEach(function (tmp) {
-                t.text += tmp.text;
-            });
-            self.sharedStrings.push(t.text);
-            self.sharedStringsLookup[t.text] = self.sharedStrings.length - 1;
-        });
+		self.sharedStringsPath = self.prefix + "/" + self.workbookRels.find("Relationship[@Type='" + SHARED_STRINGS_RELATIONSHIP + "']").attrib.Target;
+		self.sharedStrings = [];
+		let parseTextSharedStr = await self.archive.file(self.sharedStringsPath).async('string');
+		etree.parse(parseTextSharedStr).getroot().findall('si').forEach(function (si) {
+			var t = { text: '' };
+			si.findall('t').forEach(function (tmp) {
+				t.text += tmp.text;
+			});
+			si.findall('r/t').forEach(function (tmp) {
+				t.text += tmp.text;
+			});
+			self.sharedStrings.push(t.text);
+			self.sharedStringsLookup[t.text] = self.sharedStrings.length - 1;
+		});
 
-        self.contentTypes = etree.parse(self.archive.file('[Content_Types].xml').asText()).getroot();
-        var jpgType = self.contentTypes.find('Default[@Extension="jpg"]');
-        if (jpgType === null) {
-            etree.SubElement(self.contentTypes, 'Default', { 'ContentType': 'image/png', 'Extension': 'jpg' });
-        }
+		let parseTextContentTypes = await self.archive.file('[Content_Types].xml').async('string');
+		self.contentTypes = etree.parse(parseTextContentTypes).getroot();
+		var jpgType = self.contentTypes.find('Default[@Extension="jpg"]');
+		if (jpgType === null) {
+			etree.SubElement(self.contentTypes, 'Default', { 'ContentType': 'image/png', 'Extension': 'jpg' });
+		}
     }
     /**
      * Interpolate values for all the sheets using the given substitutions
@@ -225,23 +224,23 @@ class Workbook {
     substituteAll(substitutions) {
         var self = this;
         var sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
-        sheets.forEach(function (sheet) {
-            self.substitute(sheet.id, substitutions);
+        sheets.forEach(async sheet => {
+            await self.substitute(sheet.id, substitutions);
         });
     }
     /**
      * Interpolate values for the sheet with the given number (1-based) or
      * name (if a string) using the given substitutions (an object).
      */
-    substitute(sheetName, substitutions) {
+    async substitute(sheetName, substitutions) {
         var self = this;
 
-        var sheet = self.loadSheet(sheetName);
+        var sheet = await self.loadSheet(sheetName);
         self.sheet = sheet;
 
-        var dimension = sheet.root.find("dimension"), sheetData = sheet.root.find("sheetData"), currentRow = null, totalRowsInserted = 0, totalColumnsInserted = 0, namedTables = self.loadTables(sheet.root, sheet.filename), rows = [], drawing = null;
+        var dimension = sheet.root.find("dimension"), sheetData = sheet.root.find("sheetData"), currentRow = null, totalRowsInserted = 0, totalColumnsInserted = 0, namedTables = await self.loadTables(sheet.root, sheet.filename), rows = [], drawing = null;
 
-        var rels = self.loadSheetRels(sheet.filename);
+        var rels = await self.loadSheetRels(sheet.filename);
         sheetData.findall("row").forEach(function (row) {
             row.attrib.r = currentRow = self.getCurrentRow(row, totalRowsInserted);
             rows.push(row);
@@ -408,7 +407,7 @@ class Workbook {
         self.substituteTableColumnHeaders(namedTables, substitutions);
 
         // Update placeholders in hyperlinks
-        self.substituteHyperlinks(rels, substitutions);
+        await self.substituteHyperlinks(rels, substitutions);
 
         // Update <dimension /> if we added rows or columns
         if (dimension) {
@@ -448,30 +447,31 @@ class Workbook {
             self.archive.remove(self.calcChainPath);
         }
 
-        self.writeSharedStrings();
+        await self.writeSharedStrings();
         self.writeTables(namedTables);
         self.writeDrawing(drawing);
     }
     /**
      * Generate a new binary .xlsx file
      */
-    generate(options) {
+    async generate(options) {
         var self = this;
 
         if (!options) {
             options = {
-                base64: false
+                type: 'binarystring'
             };
         }
 
-        return self.archive.generate(options);
+		return await self.archive.generateAsync(options);
     }
     // Helpers
     // Write back the new shared strings list
-    writeSharedStrings() {
+    async writeSharedStrings() {
         var self = this;
 
-        var root = etree.parse(self.archive.file(self.sharedStringsPath).asText()).getroot(), children = root.getchildren();
+		let parseTextSharedStrPath = await self.archive.file(self.sharedStringsPath).async('string');
+        var root = etree.parse(parseTextSharedStrPath).getroot(), children = root.getchildren();
 
         root.delSlice(0, children.length);
 
@@ -541,7 +541,7 @@ class Workbook {
         return sheets;
     }
     // Get sheet a sheet, including filename and name
-    loadSheet(sheet) {
+    async loadSheet(sheet) {
         var self = this;
 
         var info = null;
@@ -562,21 +562,24 @@ class Workbook {
             throw new Error("Sheet " + sheet + " not found");
         }
 
+		let parseTextFileName = await self.archive.file(info.filename).async('string');
+
         return {
             filename: info.filename,
             name: info.name,
             id: info.id,
-            root: etree.parse(self.archive.file(info.filename).asText()).getroot()
+            root: etree.parse(parseTextFileName).getroot()
         };
     }
     //Load rels for a sheetName
-    loadSheetRels(sheetFilename) {
+    async loadSheetRels(sheetFilename) {
         var self = this;
         var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = path.join(sheetDirectory, '_rels', sheetName + '.rels').replace(/\\/g, '/'), relsFile = self.archive.file(relsFilename);
         if (relsFile === null) {
             return self.initSheetRels(sheetFilename);
         }
-        var rels = { filename: relsFilename, root: etree.parse(relsFile.asText()).getroot() };
+		let parseTextRels = await relsFile.async('string');
+        var rels = { filename: relsFilename, root: etree.parse(parseTextRels).getroot() };
         return rels;
     }
     initSheetRels(sheetFilename) {
@@ -590,7 +593,7 @@ class Workbook {
         return rels;
     }
     // Load Drawing file
-    loadDrawing(sheet, sheetFilename, rels) {
+    async loadDrawing(sheet, sheetFilename, rels) {
         var self = this;
         var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), drawing = { filename: '', root: null };
         var drawingPart = sheet.find("drawing");
@@ -598,11 +601,13 @@ class Workbook {
             drawing = self.initDrawing(sheet, rels);
             return drawing;
         }
-        var relationshipId = drawingPart.attrib['r:id'], target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target, drawingFilename = path.join(sheetDirectory, target).replace(/\\/g, '/'), drawingTree = etree.parse(self.archive.file(drawingFilename).asText());
+		let parseTextDrawingFilename = await self.archive.file(drawingFilename).async('string');
+        var relationshipId = drawingPart.attrib['r:id'], target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target, drawingFilename = path.join(sheetDirectory, target).replace(/\\/g, '/'), drawingTree = etree.parse(parseTextDrawingFilename);
         drawing.filename = drawingFilename;
         drawing.root = drawingTree.getroot();
         drawing.relFilename = path.dirname(drawingFilename) + '/_rels/' + path.basename(drawingFilename) + '.rels';
-        drawing.relRoot = etree.parse(self.archive.file(drawing.relFilename).asText()).getroot();
+		let parseTextRelFilename = await self.archive.file(drawing.relFilename).async('string');
+        drawing.relRoot = etree.parse(parseTextRelFilename).getroot();
         return drawing;
     }
     addContentType(partName, contentType) {
@@ -667,7 +672,7 @@ class Workbook {
         }
     }
     // Load tables for a given sheet
-    loadTables(sheet, sheetFilename) {
+    async loadTables(sheet, sheetFilename) {
         var self = this;
 
         var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = sheetDirectory + "/" + '_rels' + "/" + sheetName + '.rels', relsFile = self.archive.file(relsFilename), tables = []; // [{filename: ..., root: ....}]
@@ -675,11 +680,14 @@ class Workbook {
         if (relsFile === null) {
             return tables;
         }
+	
+		let parseTextRelsFile = await relsFile.async('string');
+        var rels = etree.parse(parseTextRelsFile).getroot();
 
-        var rels = etree.parse(relsFile.asText()).getroot();
+        sheet.findall("tableParts/tablePart").forEach(async tablePart => {
+			let parseTextTableFilename = await self.archive.file(tableFilename).async('string');
 
-        sheet.findall("tableParts/tablePart").forEach(function (tablePart) {
-            var relationshipId = tablePart.attrib['r:id'], target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target, tableFilename = target.replace('..', self.prefix), tableTree = etree.parse(self.archive.file(tableFilename).asText());
+            var relationshipId = tablePart.attrib['r:id'], target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target, tableFilename = target.replace('..', self.prefix), tableTree = etree.parse(parseTextTableFilename);
 
             tables.push({
                 filename: tableFilename,
@@ -698,9 +706,11 @@ class Workbook {
         });
     }
     //Perform substitution in hyperlinks
-    substituteHyperlinks(rels, substitutions) {
+    async substituteHyperlinks(rels, substitutions) {
         let self = this;
-        etree.parse(self.archive.file(self.sharedStringsPath).asText()).getroot();
+		let parseTextLink = await self.archive.file(self.sharedStringsPath).async('string');
+
+        etree.parse(parseTextLink).getroot();
         if (rels === null) {
             return;
         }
@@ -1112,7 +1122,7 @@ class Workbook {
         var dimension = sizeOf(substitution);
         var imageWidth = self.pixelsToEMUs(dimension.width);
         var imageHeight = self.pixelsToEMUs(dimension.height);
-        // var sheet = self.loadSheet(self.substitueSheetName);
+        // var sheet = await self.loadSheet(self.substitueSheetName);
         var imageInMergeCell = false;
         self.sheet.root.findall("mergeCells/mergeCell").forEach(function (mergeCell) {
             // If image is in merge cell, fit the image
