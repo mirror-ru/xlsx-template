@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
+	"declaration": true,
     "allowJs": true,
     "checkJs": true,
     "noEmit": false,
@@ -10,7 +11,7 @@
     "alwaysStrict": true,
     "esModuleInterop": true,
     "outDir": "lib",
-    "sourceMap": true
+    "sourceMap": false,
   }, 
   "files": [
     "src/index.js"

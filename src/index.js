@@ -6,7 +6,7 @@ var path = require('path'),
     sizeOf = require('image-size').imageSize,
     fs = require('fs'),
     etree = require('elementtree'),
-    JSZip = require("jszip");
+    JSZip = require('jszip');
 
 var DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
     CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
@@ -44,7 +44,7 @@ var _get = function(obj, desc, defaultValue) {
 class Workbook {
     /**
      * Create a new workbook. Either pass the raw data of a .xlsx file,
-     * or call `loadTemplate()` later.
+     * and call `loadTemplate()` later.
      */
     constructor(option = {}) {
         this.archive = null;
@@ -119,7 +119,7 @@ class Workbook {
         //Copy rels sheet - TODO : Maybe we can copy also the 'Target' files in rels, but Excel make this automaticly
         var relFileName = 'worksheets' + '/_rels/' + 'sheet' + newSheetIndex + '.xml.rels';
         var relArcName = self.prefix + '/' + relFileName;
-        self.archive.file(relArcName, etree.tostring(self.loadSheetRels(sheet.filename).root));
+        self.archive.file(relArcName, etree.tostring((await self.loadSheetRels(sheet.filename)).root));
 
         self._rebuild();
         return self;
