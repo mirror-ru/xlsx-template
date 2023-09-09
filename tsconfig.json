@@ -13,7 +13,6 @@
     "sourceMap": true
   }, 
   "files": [
-    "src/index.js",
-    "src/augment.d.ts"
+    "src/index.js"
   ]
 }

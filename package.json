@@ -56,9 +56,9 @@
     }
   },
   "dependencies": {
-    "@kant2002/jszip": "2.7.1",
     "elementtree": "^0.1.7",
-    "image-size": "^1.0.2"
+    "image-size": "^1.0.2",
+    "jszip": "^2.7"
   },
   "devDependencies": {
     "@types/jest": "^27.4.0",

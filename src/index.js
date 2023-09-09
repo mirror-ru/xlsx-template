@@ -1,13 +1,12 @@
 /*jshint globalstrict:true, devel:true */
 /*eslint no-var:0 */
 /*global require, module, Buffer */
-/// <reference path="augment.d.ts" />
 
 var path = require('path'),
     sizeOf = require('image-size').imageSize,
     fs = require('fs'),
     etree = require('elementtree'),
-    zip = require("@kant2002/jszip");
+    zip = require("jszip");
 
 var DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
     CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
