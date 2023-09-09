@@ -266,11 +266,11 @@ class Workbook {
 
                     // Loop over placeholders
                     self.extractPlaceholders(string).forEach(function (placeholder) {
-
                         // Only substitute things for which we have a substitution
                         var substitution = _get(substitutions, placeholder.name, ''), newCellsInserted = 0;
-
+						
                         if (placeholder.full && placeholder.type === "table" && substitution instanceof Array) {
+
                             if (placeholder.subType === 'image' && drawing == null) {
                                 if (rels) {
                                     drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
@@ -325,6 +325,10 @@ class Workbook {
                             if (placeholder.key) {
                                 substitution = _get(substitutions, placeholder.name + '.' + placeholder.key);
                             }
+
+							console.log(placeholder.name + '.' + placeholder.key)
+							//console.log(substitution)
+
                             string = self.substituteScalar(cell, string, placeholder, substitution);
                         }
                     });
@@ -804,7 +808,7 @@ class Workbook {
     // is the entirety of the string) and `type` (one of `table` or `cell`)
     extractPlaceholders(string) {
         // Yes, that's right. It's a bunch of brackets and question marks and stuff.
-        var re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?(?::(.+?))??}/g;
+        var re = /\${(?:(.+?):)?([^{}]+?)(?:\.(.+?))?(?::(.+?))??}/g;
 
         var match = null, matches = [];
         while ((match = re.exec(string)) !== null) {
