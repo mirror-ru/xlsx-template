@@ -1,7 +1,5 @@
 # XLSX Template
 
-[![Build status](https://api.travis-ci.org/optilude/xlsx-template.png?branch=master)](http://travis-ci.org/optilude/xlsx-template)
-
 This module provides a means of generating "real" Excel reports (i.e. not CSV
 files) in NodeJS applications.
 
@@ -40,7 +38,7 @@ For example:
 
 Given data
 
-    var template = { extractDates: ["Jun-01-2113", "Jun-01-2013" ]}
+    let template = { extractDates: ["Jun-01-2113", "Jun-01-2013" ]}
 
 which will be applied to following template
 
@@ -91,7 +89,7 @@ You can insert images with
 
 Given data
 
-    var template = { imageName: "helloImage.jpg"}
+    let template = { imageName: "helloImage.jpg"}
 
 You can insert a list of images with   
 
@@ -99,7 +97,7 @@ You can insert a list of images with
 
 Given data
 
-    var template = { images: [{name : "helloImage1.jpg"}, {name : "helloImage2.jpg"}]}
+    let template = { images: [{name : "helloImage1.jpg"}, {name : "helloImage2.jpg"}]}
 
 Supported image format in given data : 
 - Base64 string
@@ -110,18 +108,18 @@ Supported image format in given data :
 
 You can pass imageRootPath option for setting the root folder for your images.  
 
-    var option = {imageRootPath : "/path/to/your/image/dir"}  
+    let option = {imageRootPath : "/path/to/your/image/dir"}  
     ...  
-    var t = new XlsxTemplate(data, option);
+    let t = new XlsxTemplate(data, option);
 
 If the image Placeholders is in standard cell, image is insert normaly  
 If the image Placeholders is in merge cell, image feet (at the best) the size of the merge cell.
 
 You can pass imageRatio option for adjust the ratio image (in percent and for standard cell - not applied on merge cell)
  
-    var option = {imageRatio : 75.4}  
+    let option = {imageRatio : 75.4}  
     ...  
-    var t = new XlsxTemplate(data, option);
+    let t = new XlsxTemplate(data, option);
 
 
 
@@ -130,35 +128,36 @@ You can pass imageRatio option for adjust the ratio image (in percent and for st
 To make this magic happen, you need some code like this:
 
 ```
-    var XlsxTemplate = require('xlsx-template');
+    const XlsxTemplate = require('xlsx-template');
+	const fs = require('fs');
+ 
+	let filename = path.join(__dirname, 'templates', 'template1.xlsx');
 
-    // Load an XLSX file into memory
-    fs.readFile(path.join(__dirname, 'templates', 'template1.xlsx'), function(err, data) {
-
+	// Load an XLSX file into memory
+    fs.readFile(filename, function(err, data) {
         // Create a template
-        var template = new XlsxTemplate(data);
+        let template = new XlsxTemplate(data);
 
         // Replacements take place on first sheet
-        var sheetNumber = 1;
+        let sheetNumber = 1;
 
         // Set up some placeholder values matching the placeholders in the template
-        var values = {
-                extractDate: new Date(),
-                dates: [ new Date("2013-06-01"), new Date("2013-06-02"), new Date("2013-06-03") ],
-                people: [
-                    {name: "John Smith", age: 20},
-                    {name: "Bob Johnson", age: 22}
-                ]
-            };
+        let data = {
+			extractDate: new Date(),
+			dates: [ new Date('2013-06-01'), new Date('2013-06-02'), new Date('2013-06-03') ],
+			people: [
+				{ name: 'John Smith', age: 20 },
+				{ name: 'Bob Johnson', age: 22 }
+			]
+		};
 
         // Perform substitution
-        template.substitute(sheetNumber, values);
+        template.substitute(sheetNumber, data);
 
         // Get binary data
-        var data = template.generate();
+        let buffer = template.generate({ type: 'uint8array' });
 
-        // ...
-
+        // Your code...
     });
 ```
 
@@ -200,95 +199,3 @@ You can pass options to `generate()` to set a different return type. use
       column in the table as a logical range.
 * Placeholders only work in simple cells and tables, pivot tables or
   other such things.
-
-## Changelog
-
-### Version 1.4.3
-* Fix potential issue when template has lot of images.
-* Update image-size to 1.0.2
-
-### Version 1.4.2
-* Move to @kant2002/jszip which fix https://github.com/advisories/GHSA-36fh-84j7-cv5h
-* Fix previously broken release.
-
-### Version 1.4.1
-* Move to @kant2002/jszip which fix https://github.com/advisories/GHSA-36fh-84j7-cv5h
-* Also broke everything. **DONT USE THIS VERSION**
-
-### Version 1.4.0
-* substituteAll: Interpolate values for all the sheets using the given substitutions (#173) Thanks @jonathankeebler
-* int` and `float` don't exist in Typescript, both are of type `number`. This fixes it. (#169) Thanks @EHadoux
-* Insert images. (#126). Thanks @jdugh
-* Add customXml in the order list for rebuild. (#154). Thanks @jdugh
-* Adding 2 options affect table substitution : subsituteAllTableRow and pushDownPageBreakOnTableSubstitution. (#124). Thanks @jdugh
-
-### Version 1.3.2
-* Fix import statement for jszip
-
-### Version 1.3.1
-* Added the imageRatio parameter like a percent ratio when insert images. (#121)
-* Add new substitution for images. (#110)
-* Fixing Defined Range Name with Sheet Name. (#150)
-* Add binary option for copySheet : for header/footer in UTF-8 (#130)
-
-### Version 1.3.0
-* Added support for optional moving of the images together with table. (#109)
-
-### Version 1.2.0
-* Specify license field in addition to licenses field in the package.json (#102)
-
-### Version 1.1.0
-* Added TypeScript definitions. #101
-* NodeJS 12, 14 support
-
-### Version 1.0.0
-Nothing to see here. Just I'm being brave and make version 1.0.0
-
-### Version 0.5.0
-* Placeholder in hyperlinks. #87
-* NodeJS 10 support
-
-### Version 0.4.0
-* Fix wrongly replacing text in shared strings #81
-
-### Version 0.2.0
-
-* Add ability copy and delete sheets.
-
-### Version 0.0.7
-
-* Fix bug with calculating <dimensions /> when adding columns
-
-### Version 0.0.6
-
-* You can now pass `options` to `generate()`, which are passed to JSZip
-* Fix setting of sheet <dimensions /> when growing the sheet
-* Fix corruption of sheet when writing dates
-* Fix corruption of sheet when calculating calcChain
-
-### Version 0.0.5
-
-* Mysterious
-
-### Version 0.0.4
-
-Merged pending pull requests
-
-* Deletion of the sheets.
-
-### Version 0.0.3
-
-Merged a number of overdue pull requests, including:
-
-* Windows support
-* Support for table footers
-* Documentation improvements
-
-### Version 0.0.2
-
-* Fix a potential issue with the typing of string indices that could cause the
-  first string to not render correctly if it contained a substitution.
-
-### Version 0.0.1
-
-* Initial release
