@@ -28,7 +28,7 @@ cell, or as part of a text string. For example:
 
 might result in (depending on date formatting in the second cell):
 
-    | Extracted on: | Jun-01-2013 |
+    | Extracted on: | Jun-01-2023 |
 
 Here, `extractDate` may be a date and the second cell may be formatted as a
 number.
@@ -38,7 +38,7 @@ For example:
 
 Given data
 
-    let template = { extractDates: ["Jun-01-2113", "Jun-01-2013" ]}
+    let template = { extractDates: ["Jun-01-2022", "Jun-01-2023" ]}
 
 which will be applied to following template
 
@@ -46,7 +46,7 @@ which will be applied to following template
 
 will results in the 
 
-    | Extracted on: | Jun-01-2113 |
+    | Extracted on: | Jun-01-2022 |
 
 ### Columns
 
@@ -59,7 +59,7 @@ if the placehodler value `dates` is an array of dates:
 
 might result in:
 
-    | Jun-01-2013 | Jun-02-2013 | Jun-03-2013 |
+    | Jun-01-2023 | Jun-02-2023 | Jun-03-2023 |
 
 ### Tables
 
@@ -97,7 +97,7 @@ You can insert a list of images with
 
 Given data
 
-    let template = { images: [{name : "helloImage1.jpg"}, {name : "helloImage2.jpg"}]}
+    let template = { images: [ { name : "helloImage1.jpg" }, { name : "helloImage2.jpg" } ]}
 
 Supported image format in given data : 
 - Base64 string
@@ -108,7 +108,7 @@ Supported image format in given data :
 
 You can pass imageRootPath option for setting the root folder for your images.  
 
-    let option = {imageRootPath : "/path/to/your/image/dir"}  
+    let option = { imageRootPath : "/path/to/your/image/dir" }  
     ...  
     let t = new XlsxTemplate(data, option);
 
@@ -117,7 +117,7 @@ If the image Placeholders is in merge cell, image feet (at the best) the size of
 
 You can pass imageRatio option for adjust the ratio image (in percent and for standard cell - not applied on merge cell)
  
-    let option = {imageRatio : 75.4}  
+    let option = { imageRatio : 75.4 }  
     ...  
     let t = new XlsxTemplate(data, option);
 
@@ -128,37 +128,41 @@ You can pass imageRatio option for adjust the ratio image (in percent and for st
 To make this magic happen, you need some code like this:
 
 ```
-    const XlsxTemplate = require('xlsx-template');
-    const fs = require('fs');
- 
-    let filename = path.join(__dirname, 'templates', 'template1.xlsx');
+	const XlsxTemplate = require('xlsx-template');
+	const fs = require('fs');
+
+	let filename = path.join(__dirname, 'templates', 'template1.xlsx');
 
 	// Load an XLSX file into memory
-    fs.readFile(filename, function(err, data) {
-        // Create a template
-        let template = new XlsxTemplate(data);
+	fs.readFile(filename, function(err, data) {
+		// Create a template
+		let template = new XlsxTemplate(data);
 
-        // Replacements take place on first sheet
-        let sheetNumber = 1;
+		// Replacements take place on first sheet
+		let sheetNumber = 1;
 
-        // Set up some placeholder values matching the placeholders in the template
-        let data = {
+		// Set up some placeholder values matching the placeholders in the template
+		let data = {
 			extractDate: new Date(),
-			dates: [ new Date('2013-06-01'), new Date('2013-06-02'), new Date('2013-06-03') ],
+			dates: [ 
+				new Date('2013-06-01'), 
+				new Date('2013-06-02'), 
+				new Date('2013-06-03')
+			],
 			people: [
 				{ name: 'John Smith', age: 20 },
 				{ name: 'Bob Johnson', age: 22 }
 			]
 		};
 
-        // Perform substitution
-        template.substitute(sheetNumber, data);
+		// Perform substitution
+		template.substitute(sheetNumber, data);
 
-        // Get binary data
-        let buffer = template.generate({ type: 'uint8array' });
+		// Get binary data
+		let buffer = template.generate({ type: 'uint8array' });
 
-        // Your code...
-    });
+		// Your code...
+	});
 ```
 
 At this stage, `data` is a string blob representing the compressed archive that
