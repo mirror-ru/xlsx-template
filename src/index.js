@@ -326,7 +326,7 @@ class Workbook {
                                 substitution = _get(substitutions, placeholder.name + '.' + placeholder.key);
                             }
 
-							console.log(placeholder.name + '.' + placeholder.key)
+							//console.log(placeholder.name + '.' + placeholder.key)
 							//console.log(substitution)
 
                             string = self.substituteScalar(cell, string, placeholder, substitution);
