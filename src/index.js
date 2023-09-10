@@ -177,12 +177,6 @@ class Workbook {
 		await self.loadTemplate(buffer);
 	}
     /**
-     * Save a .xlsx file
-     */
-	async saveFile(filename) {
-		//TODO
-	}
-    /**
      * Load a .xlsx file from a byte array.
      */
     async loadTemplate(data) {
@@ -195,7 +189,7 @@ class Workbook {
 		self.archive = await JSZip.loadAsync(data, { base64: false, checkCRC32: true });
 
 		// Load relationships
-		let parseTextRels = await self.archive.file("_rels/.rels").async('string');
+		let parseTextRels = await self.archive.file('_rels/.rels').async('string');
 		var rels = etree.parse(parseTextRels).getroot(), workbookPath = rels.find("Relationship[@Type='" + DOCUMENT_RELATIONSHIP + "']").attrib.Target;
 
 		self.workbookPath = workbookPath;
@@ -274,9 +268,8 @@ class Workbook {
                     // Look for a shared string that may contain placeholders
                     var cellValue = cell.find("v"), stringIndex = parseInt(cellValue.text, 10), string = self.sharedStrings[stringIndex];
 
-                    if (string === undefined) {
+                    if (string === undefined)
                         return;
-                    }
 
                     // Loop over placeholders
                     self.extractPlaceholders(string).forEach(function (placeholder) {
@@ -440,8 +433,8 @@ class Workbook {
 
         //Here we are forcing the values in formulas to be recalculated
         // existing as well as just substituted
-        sheetData.findall("row").forEach(function (row) {
-            row.findall("c").forEach(function (cell) {
+        sheetData.findall('row').forEach(function (row) {
+            row.findall('c').forEach(function (cell) {
                 var formulas = cell.findall('f');
                 if (formulas && formulas.length > 0) {
                     cell.findall('v').forEach(function (v) {
@@ -687,32 +680,39 @@ class Workbook {
             }
         }
     }
+
     // Load tables for a given sheet
     async loadTables(sheet, sheetFilename) {
-        var self = this;
+        let self = this;
 
-        var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = sheetDirectory + "/" + '_rels' + "/" + sheetName + '.rels', relsFile = self.archive.file(relsFilename), tables = []; // [{filename: ..., root: ....}]
+        let sheetDirectory = path.dirname(sheetFilename); 
+		let sheetName = path.basename(sheetFilename);
+		let relsFilename = sheetDirectory + '/' + '_rels' + '/' + sheetName + '.rels'; 
+		let relsFile = self.archive.file(relsFilename); 
 
-        if (relsFile === null) {
+		let tables = [];
+
+        if (relsFile === null)
             return tables;
-        }
 	
 		let parseTextRelsFile = await relsFile.async('string');
-        var rels = etree.parse(parseTextRelsFile).getroot();
+        let rels = etree.parse(parseTextRelsFile).getroot();
 
-        sheet.findall("tableParts/tablePart").forEach(async tablePart => {
+		for(const tablePart of sheet.findall('tableParts/tablePart'))
+		{
+			let relationshipId = tablePart.attrib['r:id'];
+			let target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target;
+			let tableFilename = target.replace('..', self.prefix);
+
 			let parseTextTableFilename = await self.archive.file(tableFilename).async('string');
+			let tableTree = etree.parse(parseTextTableFilename);
 
-            var relationshipId = tablePart.attrib['r:id'], target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target, tableFilename = target.replace('..', self.prefix), tableTree = etree.parse(parseTextTableFilename);
-
-            tables.push({
-                filename: tableFilename,
-                root: tableTree.getroot()
-            });
-        });
+			tables.push({ filename: tableFilename, root: tableTree.getroot() });
+        }
 
         return tables;
     }
+
     // Write back possibly-modified tables
     writeTables(tables) {
         var self = this;
@@ -721,6 +721,7 @@ class Workbook {
             self.archive.file(namedTable.filename, etree.tostring(namedTable.root));
         });
     }
+
     //Perform substitution in hyperlinks
     async substituteHyperlinks(rels, substitutions) {
         let self = this;

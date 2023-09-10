@@ -785,11 +785,11 @@ describe('CRUD operations', () => {
 
 			expect(sheet1).toBeDefined();
 			expect(sheet1.find("./sheetData/row/c[@r='A2']/v")).not.toBeNull();
-			expect(getSharedString(sharedStrings, sheet1, "A2")).toEqual('First row');
+			expect(getSharedString(sharedStrings, sheet1, 'A2')).toEqual('First row');
 			expect(sheet1.find("./sheetData/row/c[@r='B2']/v")).not.toBeNull();
-			expect(getSharedString(sharedStrings, sheet1, "B2")).toEqual('B');
+			expect(getSharedString(sharedStrings, sheet1, 'B2')).toEqual('B');
 			
-			// fs.writeFileSync('test/output/test8.xlsx', buffer_modify);   
+			fs.writeFileSync('test/output/test10.xlsx', buffer_modify);
 		});
 		
 		it('Arrays with single element', async () => {
@@ -801,7 +801,9 @@ describe('CRUD operations', () => {
 
 			await template.substitute(1, { 
 				sales: [ 
-					{ payments: [ 123 ] } 
+					{ 
+						payments: [ 123 ] 
+					} 
 				] 
 			});
 
@@ -844,17 +846,17 @@ describe('CRUD operations', () => {
 					{
 						name: 'John Smith',
 						role: { name: 'Developer' },
-						days: [1, 2, 3]
+						days: [ 1, 2, 3 ]
 					},
 					{
 						name: 'James Smith',
 						role: { name: 'Analyst' },
-						days: [1, 2, 3, 4, 5]
+						days: [ 1, 2, 3, 4, 5 ]
 					},
 					{
 						name: 'Jim Smith',
 						role: { name: 'Manager' },
-						days: [1, 2, 3, 4, 5, 6, 7]
+						days: [ 1, 2, 3, 4, 5, 6, 7 ]
 					}
 				]
 			});

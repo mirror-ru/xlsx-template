@@ -49,10 +49,6 @@ declare class Workbook {
      */
     loadFile(filename: any): Promise<void>;
     /**
-     * Save a .xlsx file
-     */
-    saveFile(filename: any): Promise<void>;
-    /**
      * Load a .xlsx file from a byte array.
      */
     loadTemplate(data: any): Promise<void>;
