@@ -22,7 +22,7 @@ describe("CRUD operations", function() {
 
 	describe('XlsxTemplate', function() {
 
-		/*it("can load data", function(done) {
+		it("can load data", function(done) {
 
 			fs.readFile(path.join(__dirname, 'templates', 't1.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -882,10 +882,10 @@ describe("CRUD operations", function() {
 
 				done();
 			});
-		});*/
+		});
 	});
 	
-	/*describe("Multiple sheets", function() {
+	describe("Multiple sheets", function() {
 		it("Each sheet should take each name", function (done) {
 			fs.readFile(path.join(__dirname, 'templates', 'multple-sheets-arrays.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -920,5 +920,5 @@ describe("CRUD operations", function() {
 				done();
 			});
 		});
-	});*/
+	});
 });

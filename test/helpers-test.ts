@@ -7,7 +7,7 @@ var XlsxTemplate = require('../build');
 
 describe("Helpers", function() {
 
-    /*describe('stringIndex', function() {
+    describe('stringIndex', function() {
         it("adds new strings to the index if required", async function() {
             var t = new XlsxTemplate();
             expect(t.stringIndex("foo")).toEqual(0);
@@ -697,6 +697,6 @@ describe("Helpers", function() {
         });
 
 
-    });*/
+    });
 
 });

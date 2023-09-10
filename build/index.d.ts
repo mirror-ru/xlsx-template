@@ -143,10 +143,26 @@ declare class Workbook {
     getWidthMergeCell(mergeCell: any, sheet: any): number;
     getHeightCell(numRow: any, sheet: any): number;
     getHeightMergeCell(mergeCell: any, sheet: any): number;
-    getNbRowOfMergeCell(mergeCell: any): number;
-    pixelsToEMUs(pixels: any): number;
-    columnWidthToEMUs(width: any): number;
-    rowHeightToEMUs(height: any): number;
+    /**
+     * @param {{ attrib: { ref: any; }; }} mergeCell
+     */
+    getNbRowOfMergeCell(mergeCell: {
+        attrib: {
+            ref: any;
+        };
+    }): number;
+    /**
+     * @param {number} pixels
+     */
+    pixelsToEMUs(pixels: number): number;
+    /**
+     * @param {number} width
+     */
+    columnWidthToEMUs(width: number): number;
+    /**
+     * @param {number} height
+     */
+    rowHeightToEMUs(height: number): number;
     /**
      * Find max file id.
      * @param {RegExp} fileNameRegex
@@ -155,7 +171,10 @@ declare class Workbook {
      */
     findMaxFileId(fileNameRegex: RegExp, idRegex: RegExp): number;
     cellInMergeCells(cell: any, mergeCell: any): boolean;
-    isUrl(str: any): boolean;
+    /**
+     * @param {string} str
+     */
+    isUrl(str: string): boolean;
     toArrayBuffer(buffer: any): ArrayBuffer;
     imageToBuffer(imageObj: any): Buffer;
     findMaxId(element: any, tag: any, attr: any, idRegex: any): number;

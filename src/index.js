@@ -1432,7 +1432,7 @@ class Workbook {
     getHeightCell(numRow, sheet) {
         var defaultHight = sheet.root.find("sheetFormatPr").attrib["defaultRowHeight"];
         var finalHeight = defaultHight;
-        sheet.root.findall("sheetData/row").forEach(function (row) {
+        sheet.root.findall("sheetData/row").forEach(row => {
             if (numRow == row.attrib["r"]) {
                 if (row.attrib["ht"] != undefined) {
                     finalHeight = row.attrib["ht"];
@@ -1450,14 +1450,23 @@ class Workbook {
         }
         return mergeHeight;
     }
+    /**
+	 * @param {{ attrib: { ref: any; }; }} mergeCell
+	 */
     getNbRowOfMergeCell(mergeCell) {
         var self = this;
         var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
         return mergeEndRow - mergeStartRow + 1;
     }
+    /**
+	 * @param {number} pixels
+	 */
     pixelsToEMUs(pixels) {
         return Math.round(pixels * 914400 / 96);
     }
+    /**
+	 * @param {number} width
+	 */
     columnWidthToEMUs(width) {
         // TODO : This is not the true. Change with true calcul
         // can find help here : 
@@ -1469,6 +1478,9 @@ class Workbook {
         // http://lcorneliussen.de/raw/dashboards/ooxml/
         return this.pixelsToEMUs(width * 7.625579987895905);
     }
+    /**
+	 * @param {number} height
+	 */
     rowHeightToEMUs(height) {
         // TODO : need to be verify
         return Math.round(height / 72 * 914400);
@@ -1504,6 +1516,9 @@ class Workbook {
         }
         return false;
     }
+    /**
+	 * @param {string} str
+	 */
     isUrl(str) {
         var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
             '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
