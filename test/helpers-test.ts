@@ -3,7 +3,7 @@
 /*global require, describe, before, it */
 "use strict";
 
-var XlsxTemplate = require('../lib');
+var XlsxTemplate = require('../build');
 
 describe("Helpers", function() {
 

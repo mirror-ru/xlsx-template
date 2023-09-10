@@ -2,9 +2,9 @@
   "name": "xlsx-template",
   "version": "1.4.3",
   "description": "Generate .xlsx (Excel) files from templates built in Excel",
-  "main": "./lib/index",
+  "main": "./build/index",
   "files": [
-    "lib"
+    "build"
   ],
   "author": {
     "name": "Martin Aspeli"
@@ -51,7 +51,7 @@
     ],
     "testTimeout": 500,
     "moduleNameMapper": {
-      "^app/(.*)": "<rootDir>/lib/$1",
+      "^app/(.*)": "<rootDir>/build/$1",
       "^tests/(.*)": "<rootDir>/tests/$1"
     }
   },

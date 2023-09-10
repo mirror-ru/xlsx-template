@@ -10,7 +10,7 @@
     "noImplicitAny": false,
     "alwaysStrict": true,
     "esModuleInterop": true,
-    "outDir": "lib",
+    "outDir": "build",
     "sourceMap": false,
   }, 
   "files": [

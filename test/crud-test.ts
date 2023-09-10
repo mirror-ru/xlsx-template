@@ -7,7 +7,7 @@
 
 "use strict";
 
-var XlsxTemplate = require("../lib"),
+var XlsxTemplate = require("../build"),
     fs           = require("fs"),
     path         = require("path"),
     etree        = require("elementtree");

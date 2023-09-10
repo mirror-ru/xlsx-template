@@ -5,7 +5,7 @@ example/
 checkouts
 .idea/
 .vs/
-lib/*.js
-lib/*.d.ts
-!lib/index.d.ts
+build/*.js
+build/*.d.ts
+!build/index.d.ts
 *.map

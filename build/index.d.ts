@@ -35,11 +35,11 @@ declare class Workbook {
     /**
      * Delete unused sheets if needed
      */
-    deleteSheet(sheetName: any): Promise<Workbook>;
+    deleteSheet(sheetName: any): Promise<this>;
     /**
      * Clone sheets in current workbook template
      */
-    copySheet(sheetName: any, copyName: any): Promise<Workbook>;
+    copySheet(sheetName: any, copyName: any): Promise<this>;
     /**
      *  Partially rebuild after copy/delete sheets
      */
