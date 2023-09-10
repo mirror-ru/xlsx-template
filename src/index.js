@@ -167,6 +167,22 @@ class Workbook {
         self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
     }
     /**
+     * Load a .xlsx file from filename
+     */
+	async loadFile(filename) {
+		var self = this;
+
+		const buffer = fs.readFileSync(filename);
+
+		await self.loadTemplate(buffer);
+	}
+    /**
+     * Save a .xlsx file
+     */
+	async saveFile(filename) {
+		//TODO
+	}
+    /**
      * Load a .xlsx file from a byte array.
      */
     async loadTemplate(data) {
@@ -459,7 +475,7 @@ class Workbook {
 
         if (!options) {
             options = {
-                type: 'binarystring'
+                type: 'uint8array'
             };
         }
 

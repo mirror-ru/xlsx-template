@@ -161,7 +161,7 @@ let data = {
 template.substitute(sheet_id, data);
 
 // Get binary data
-let buffer_modify = template.generate({ type: 'uint8array' });
+let buffer_modify = template.generate();
 
 // Save file
 let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
@@ -177,7 +177,7 @@ attach it to an email or do whatever you want with it.
 You can pass options to `generate()` to set a different return type. use
 `{type: 'uint8array'}` to generate a `Uint8Array`, `arraybuffer`, `blob`,
 `nodebuffer` to generate an `ArrayBuffer`, `Blob` or `nodebuffer`, or
-`base64` to generate a base64-encoded string.
+`base64` to generate a base64-encoded string. Default: `{type: 'uint8array'}`
 
 ## Caveats
 

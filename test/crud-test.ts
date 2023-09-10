@@ -53,7 +53,7 @@ describe("CRUD operations", function() {
 
 				await t.writeSharedStrings();
 
-				var text = await t.archive.file("xl/sharedStrings.xml").async("string");
+				var text = await t.archive.file("xl/sharedStrings.xml").async('string');
 				expect(text).not.toMatch("<si><t>Plan table</t></si>");
 				expect(text).toMatch("<si><t>The plan</t></si>");
 
@@ -93,8 +93,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:F9");
@@ -205,8 +205,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:F9");
@@ -307,8 +307,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:C7");
@@ -370,8 +370,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 				
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:F7");
@@ -436,8 +436,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be set
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:E6");
@@ -492,8 +492,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:H17");
@@ -627,9 +627,9 @@ describe("CRUD operations", function() {
 
 			var newData = await t.generate();
 
-			var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-				sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot(),
-				rels          = etree.parse(await t.archive.file("xl/worksheets/_rels/sheet1.xml.rels").async("string")).getroot()
+			var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+				sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot(),
+				rels          = etree.parse(await t.archive.file("xl/worksheets/_rels/sheet1.xml.rels").async('string')).getroot()
 			;
 
 			//expect(sheet1.find("./hyperlinks/hyperlink/c[@r='C16']/v").text).toEqual("41275");
@@ -652,12 +652,14 @@ describe("CRUD operations", function() {
 				await t.loadTemplate(data);
 
 				await t.substitute(1, {
-					ages: [
+					ages: 
+					[
 						{name: "John", age: 10},
 						{name: "Bill", age: 12}
 					],
-					days: ["Monday", "Tuesday", "Wednesday"],
-					hours: [
+					days: [ "Monday", "Tuesday", "Wednesday" ],
+					hours: 
+					[
 						{name: "Bob", days: [10, 20, 30]},
 						{name: "Jim", days: [12, 24, 36]}
 					],
@@ -666,11 +668,11 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot(),
-					workbook      = etree.parse(await t.archive.file("xl/workbook.xml").async("string")).getroot(),
-					table1        = etree.parse(await t.archive.file("xl/tables/table1.xml").async("string")).getroot(),
-					table2        = etree.parse(await t.archive.file("xl/tables/table2.xml").async("string")).getroot(),
-					table3        = etree.parse(await t.archive.file("xl/tables/table3.xml").async("string")).getroot();
+				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot(),
+					workbook      = etree.parse(await t.archive.file("xl/workbook.xml").async('string')).getroot(),
+					table1        = etree.parse(await t.archive.file("xl/tables/table1.xml").async('string')).getroot(),
+					table2        = etree.parse(await t.archive.file("xl/tables/table2.xml").async('string')).getroot(),
+					table3        = etree.parse(await t.archive.file("xl/tables/table3.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:L29");
@@ -709,29 +711,27 @@ describe("CRUD operations", function() {
 
 		});
 
-		it("Correctly parse when formula in the file", function(done) {
+		it('Correctly parse when formula in the file', async () => {
+			const filename_in = path.join(__dirname, 'templates', 'template.xlsx');
 
-			fs.readFile(path.join(__dirname, 'templates', 'template.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+			const buffer = fs.readFileSync(filename_in);
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				await t.substitute(1, {
-					people: [
-						{
-							name: "John Smith",
-							age: 55,
-						},
-						{
-							name: "John Doe",
-							age: 35,
-						}
-					]
-				});
+			const template = new XlsxTemplate();
 
-				done();
+			await template.loadTemplate(buffer);
+
+			await template.substitute(1, {
+				people: [
+					{
+						name: "John Smith",
+						age: 55,
+					},
+					{
+						name: "John Doe",
+						age: 35,
+					}
+				]
 			});
-
 		});
 
 		it("Correctly recalculate formula", function(done) {
@@ -748,7 +748,7 @@ describe("CRUD operations", function() {
 				});
 
 				var newData = await t.generate();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 				expect(sheet1).toBeDefined();
 
 				expect(sheet1.find("./sheetData/row/c[@r='D2']/f").text).toEqual("Table3[Qty]*Table3[UnitCost]");
@@ -776,7 +776,7 @@ describe("CRUD operations", function() {
 				});
 
 				var newData = await t.generate();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 				expect(sheet1).toBeDefined();
 
 				// fs.writeFileSync('test/output/test7.xlsx', newData, 'binary');
@@ -784,31 +784,33 @@ describe("CRUD operations", function() {
 			});        
 		});
 		
-		it("Array indexing", function(done) {
-			fs.readFile(path.join(__dirname, 'templates', 'test-array.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+		it('Array indexing', async () => {
+			const filename_in = path.join(__dirname, 'templates', 'test-array.xlsx');
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				await t.substitute(1, {
-					data: [
-						"First row",
-						{ name: 'B' },
-					]
-				});
+			const buffer = fs.readFileSync(filename_in);
 
-				var newData = await t.generate();
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
-				expect(sheet1).toBeDefined();
-				expect(sheet1.find("./sheetData/row/c[@r='A2']/v")).not.toBeNull();
-				expect(getSharedString(sharedStrings, sheet1, "A2")).toEqual("First row");
-				expect(sheet1.find("./sheetData/row/c[@r='B2']/v")).not.toBeNull();
-				expect(getSharedString(sharedStrings, sheet1, "B2")).toEqual("B");
-				
-				// fs.writeFileSync('test/output/test8.xlsx', newData, 'binary');
-				done();
-			});        
+			let template = new XlsxTemplate();
+
+			await template.loadTemplate(buffer);
+
+			await template.substitute(1, {
+				data: [
+					'First row',
+					{ name: 'B' },
+				]
+			});
+
+			let buffer_modify = await template.generate();
+			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
+				sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
+			expect(sheet1).toBeDefined();
+			expect(sheet1.find("./sheetData/row/c[@r='A2']/v")).not.toBeNull();
+			expect(getSharedString(sharedStrings, sheet1, "A2")).toEqual('First row');
+			expect(sheet1.find("./sheetData/row/c[@r='B2']/v")).not.toBeNull();
+			expect(getSharedString(sharedStrings, sheet1, "B2")).toEqual('B');
+			
+			// fs.writeFileSync('test/output/test8.xlsx', buffer_modify, 'binary');   
 		});
 		
 		it("Arrays with single element", function(done) {
@@ -821,8 +823,8 @@ describe("CRUD operations", function() {
 				await t.substitute(1, data_values);
 
 				var newData = await t.generate();
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 				expect(sheet1).toBeDefined();
 				var a1 = sheet1.find("./sheetData/row/c[@r='A1']/v");
 				var firstElement = sheet1.findall("./sheetData/row/c[@r='A1']");
@@ -867,8 +869,8 @@ describe("CRUD operations", function() {
 
 				var newData = await t.generate();
 
-				// var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot(),
-				var sheet1 = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
+				// var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
+				var sheet1 = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
 
 				// Dimensions should be updated
 				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:F9");
@@ -906,9 +908,9 @@ describe("CRUD operations", function() {
 			
 				// Get binary data
 				var newData = await t.generate();
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async("string")).getroot();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async("string")).getroot();
-				var sheet2        = etree.parse(await t.archive.file("xl/worksheets/sheet2.xml").async("string")).getroot();
+				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot();
+				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
+				var sheet2        = etree.parse(await t.archive.file("xl/worksheets/sheet2.xml").async('string')).getroot();
 				expect(sheet1).toBeDefined();
 				expect(sheet2).toBeDefined();
 				expect(getSharedString(sharedStrings, sheet1, "A1")).toEqual("page: 1");
