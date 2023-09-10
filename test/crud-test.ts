@@ -479,7 +479,7 @@ describe("CRUD operations", function() {
 				var t = new XlsxTemplate();
 				await t.loadTemplate(data);
 
-				await t.substitute("Tables", {
+				await t.substitute(1, {
 					ages: [{name: "John", age: 10}, {name: "Bob", age: 2}],
 					scores: [{name: "John", score: 100}, {name: "Bob", score: 110}, {name: "Jim", score: 120}],
 					coords: [],
@@ -651,7 +651,7 @@ describe("CRUD operations", function() {
 				var t = new XlsxTemplate();
 				await t.loadTemplate(data);
 
-				await t.substitute("Tables", {
+				await t.substitute(1, {
 					ages: [
 						{name: "John", age: 10},
 						{name: "Bill", age: 12}
