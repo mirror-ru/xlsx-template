@@ -166,7 +166,7 @@ let buffer_modify = template.generate({ type: 'uint8array' });
 // Save file
 let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
 
-fs.writeFileSync('./example/output.xlsx', buffer_modify);
+fs.writeFileSync(filename_out, buffer_modify);
 ```
 
 At this stage, `data` is a string blob representing the compressed archive that
