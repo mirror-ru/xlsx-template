@@ -231,12 +231,14 @@ class Workbook {
      * Interpolate values for all the sheets using the given substitutions
      * (an object).
      */
-    substituteAll(substitutions) {
+    async substituteAll(substitutions) {
         var self = this;
+
         var sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
-        sheets.forEach(async sheet => {
+
+		for(const sheet of sheets) {
             await self.substitute(sheet.id, substitutions);
-        });
+        }
     }
     /**
      * Interpolate values for the sheet with the given number (1-based) or
@@ -248,44 +250,46 @@ class Workbook {
         var sheet = await self.loadSheet(sheetName);
         self.sheet = sheet;
 
-        var dimension = sheet.root.find("dimension"), sheetData = sheet.root.find("sheetData"), currentRow = null, totalRowsInserted = 0, totalColumnsInserted = 0, namedTables = await self.loadTables(sheet.root, sheet.filename), rows = [], drawing = null;
+        var dimension = sheet.root.find('dimension'), sheetData = sheet.root.find('sheetData'), currentRow = null, totalRowsInserted = 0, totalColumnsInserted = 0, namedTables = await self.loadTables(sheet.root, sheet.filename), rows = [], drawing = null;
 
         var rels = await self.loadSheetRels(sheet.filename);
-        sheetData.findall("row").forEach(function (row) {
+
+        sheetData.findall('row').forEach(row => {
             row.attrib.r = currentRow = self.getCurrentRow(row, totalRowsInserted);
             rows.push(row);
 
             var cells = [], cellsInserted = 0, newTableRows = [], cellsForsubstituteTable = []; // Contains all the row cells when substitute tables
 
-            row.findall("c").forEach(function (cell) {
+            row.findall('c').forEach(cell => {
                 var appendCell = true;
+
                 cell.attrib.r = self.getCurrentCell(cell, currentRow, cellsInserted);
 
                 // If c[@t="s"] (string column), look up /c/v@text as integer in
                 // `this.sharedStrings`
-                if (cell.attrib.t === "s") {
-
+                if (cell.attrib.t === 's') {
                     // Look for a shared string that may contain placeholders
-                    var cellValue = cell.find("v"), stringIndex = parseInt(cellValue.text, 10), string = self.sharedStrings[stringIndex];
+                    var cellValue = cell.find('v'), stringIndex = parseInt(cellValue.text, 10), string = self.sharedStrings[stringIndex];
 
                     if (string === undefined)
                         return;
 
                     // Loop over placeholders
-                    self.extractPlaceholders(string).forEach(function (placeholder) {
+                    self.extractPlaceholders(string).forEach(placeholder => {
                         // Only substitute things for which we have a substitution
                         var substitution = _get(substitutions, placeholder.name, ''), newCellsInserted = 0;
 						
-                        if (placeholder.full && placeholder.type === "table" && substitution instanceof Array) {
-
+                        if (placeholder.full && placeholder.type === 'table' && substitution instanceof Array) {
                             if (placeholder.subType === 'image' && drawing == null) {
                                 if (rels) {
                                     drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
                                 } else {
-                                    console.log("Need to implement initRels. Or init this with Excel");
+                                    console.log('Need to implement initRels. Or init this with Excel');
                                 }
                             }
+
                             cellsForsubstituteTable.push(cell); // When substitute table, push (all) the cell
+
                             newCellsInserted = self.substituteTable(
                                 row, newTableRows,
                                 cells, cell,
@@ -296,12 +300,11 @@ class Workbook {
                             // don't double-insert cells
                             // this applies to arrays only, incorrectly applies to object arrays when there a single row, thus not rendering single row
                             if (newCellsInserted !== 0 || substitution.length) {
-                                if (substitution.length === 1) {
+                                if (substitution.length === 1)
                                     appendCell = true;
-                                }
-                                if (substitution[0][placeholder.key] instanceof Array) {
+                                
+                                if (substitution[0][placeholder.key] instanceof Array)
                                     appendCell = false;
-                                }
                             }
 
                             // Did we insert new columns (array values)?
@@ -309,8 +312,9 @@ class Workbook {
                                 cellsInserted += newCellsInserted;
                                 self.pushRight(self.workbook, sheet.root, cell.attrib.r, newCellsInserted);
                             }
-                        } else if (placeholder.full && placeholder.type === "normal" && substitution instanceof Array) {
+                        } else if (placeholder.full && placeholder.type === 'normal' && substitution instanceof Array) {
                             appendCell = false; // don't double-insert cells
+
                             newCellsInserted = self.substituteArray(
                                 cells, cell, substitution
                             );
@@ -319,22 +323,18 @@ class Workbook {
                                 cellsInserted += newCellsInserted;
                                 self.pushRight(self.workbook, sheet.root, cell.attrib.r, newCellsInserted);
                             }
-                        } else if (placeholder.type === "image" && placeholder.full) {
+                        } else if (placeholder.full && placeholder.type === 'image') {
                             if (rels != null) {
                                 if (drawing == null) {
                                     drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
                                 }
                                 string = self.substituteImage(cell, string, placeholder, substitution, drawing);
                             } else {
-                                console.log("Need to implement initRels. Or init this with Excel");
+                                console.log('Need to implement initRels. Or init this with Excel');
                             }
                         } else {
-                            if (placeholder.key) {
+                            if (placeholder.key)
                                 substitution = _get(substitutions, placeholder.name + '.' + placeholder.key);
-                            }
-
-							//console.log(placeholder.name + '.' + placeholder.key)
-							//console.log(substitution)
 
                             string = self.substituteScalar(cell, string, placeholder, substitution);
                         }
@@ -342,12 +342,9 @@ class Workbook {
                 }
 
                 // if we are inserting columns, we may not want to keep the original cell anymore
-                if (appendCell) {
+                if (appendCell)
                     cells.push(cell);
-                }
-
-            }); // cells loop
-
+            });
 
             // We may have inserted columns, so re-build the children of the row
             self.replaceChildren(row, cells);
@@ -356,58 +353,61 @@ class Workbook {
             if (cellsInserted !== 0) {
                 self.updateRowSpan(row, cellsInserted);
 
-                if (cellsInserted > totalColumnsInserted) {
+                if (cellsInserted > totalColumnsInserted)
                     totalColumnsInserted = cellsInserted;
-                }
-
             }
 
             // Add newly inserted rows
             if (newTableRows.length > 0) {
                 // Move images for each subsitute array if option is active
-                if (self.option["moveImages"] && rels) {
+                if (self.option['moveImages'] && rels) {
                     if (drawing == null) {
                         // Maybe we can load drawing at the begining of function and remove all the self.loadDrawing() along the function ?
                         // If we make this, we create all the time the drawing file (like rels file at this moment)
                         drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
                     }
-                    if (drawing != null) {
+
+                    if (drawing != null)
                         self.moveAllImages(drawing, row.attrib.r, newTableRows.length);
-                    }
                 }
 
                 // Filter all the cellsForsubstituteTable cell with the 'row' cell
-                var cellsOverTable = row.findall("c").filter(cell => !cellsForsubstituteTable.includes(cell));
+                var cellsOverTable = row.findall('c').filter(cell => !cellsForsubstituteTable.includes(cell));
 
-                newTableRows.forEach(function (row) {
+                newTableRows.forEach(row => {
                     if (self.option && self.option.subsituteAllTableRow) {
                         // I happend the other cell in substitute new table rows
-                        cellsOverTable.forEach(function (cellOverTable) {
+                        cellsOverTable.forEach(cellOverTable => {
                             var newCell = self.cloneElement(cellOverTable);
+
                             newCell.attrib.r = self.joinRef({
                                 row: row.attrib.r,
                                 col: self.splitRef(newCell.attrib.r).col
                             });
+							
                             row.append(newCell);
                         });
+
                         // I sort the cell in the new row
-                        var newSortRow = row.findall("c").sort(function (a, b) {
+                        var newSortRow = row.findall('c').sort((a, b) => {
                             var colA = self.splitRef(a.attrib.r).col;
                             var colB = self.splitRef(b.attrib.r).col;
+
                             return self.charToNum(colA) - self.charToNum(colB);
                         });
+
                         // And I replace the cell
                         self.replaceChildren(row, newSortRow);
                     }
 
                     rows.push(row);
+
                     ++totalRowsInserted;
                 });
+
                 self.pushDown(self.workbook, sheet.root, namedTables, currentRow, newTableRows.length);
             }
-
-        }); // rows loop
-
+        });
 
         // We may have inserted rows, so re-build the children of the sheetData
         self.replaceChildren(sheetData, rows);
@@ -433,11 +433,12 @@ class Workbook {
 
         //Here we are forcing the values in formulas to be recalculated
         // existing as well as just substituted
-        sheetData.findall('row').forEach(function (row) {
-            row.findall('c').forEach(function (cell) {
+        sheetData.findall('row').forEach(row => {
+            row.findall('c').forEach(cell => {
                 var formulas = cell.findall('f');
+
                 if (formulas && formulas.length > 0) {
-                    cell.findall('v').forEach(function (v) {
+                    cell.findall('v').forEach(v => {
                         cell.remove(v);
                     });
                 }
@@ -447,16 +448,18 @@ class Workbook {
         // Write back the modified XML trees
         self.archive.file(sheet.filename, etree.tostring(sheet.root));
         self.archive.file(self.workbookPath, etree.tostring(self.workbook));
-        if (rels) {
+
+        if (rels)
             self.archive.file(rels.filename, etree.tostring(rels.root));
-        }
+
         self.archive.file('[Content_Types].xml', etree.tostring(self.contentTypes));
+
         // Remove calc chain - Excel will re-build, and we may have moved some formulae
-        if (self.calcChainPath && self.archive.file(self.calcChainPath)) {
+        if (self.calcChainPath && self.archive.file(self.calcChainPath))
             self.archive.remove(self.calcChainPath);
-        }
 
         await self.writeSharedStrings();
+
         self.writeTables(namedTables);
         self.writeDrawing(drawing);
     }

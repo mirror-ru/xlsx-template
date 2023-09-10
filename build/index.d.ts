@@ -56,7 +56,7 @@ declare class Workbook {
      * Interpolate values for all the sheets using the given substitutions
      * (an object).
      */
-    substituteAll(substitutions: any): void;
+    substituteAll(substitutions: any): Promise<void>;
     /**
      * Interpolate values for the sheet with the given number (1-based) or
      * name (if a string) using the given substitutions (an object).
