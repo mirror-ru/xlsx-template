@@ -7,62 +7,54 @@
 
 "use strict";
 
-var XlsxTemplate = require("../build"),
-    fs           = require("fs"),
-    path         = require("path"),
-    etree        = require("elementtree");
+var XlsxTemplate = require('../build'),
+    fs           = require('fs'),
+    path         = require('path'),
+    etree        = require('elementtree');
 
 function getSharedString(sharedStrings, sheet1, index) {
-	return sharedStrings.findall("./si")[
+	return sharedStrings.findall('./si')[
 		parseInt(sheet1.find("./sheetData/row/c[@r='" + index + "']/v").text, 10)
-	].find("t").text;
+	].find('t').text;
 }
 
-describe("CRUD operations", function() {
+describe('CRUD operations', () => {
 
-	describe('XlsxTemplate', function() {
+	describe('XlsxTemplate', () => {
 
-		it("can load data", function(done) {
+		it('can load data', async () =>  {
+			const template = new XlsxTemplate();
 
-			fs.readFile(path.join(__dirname, 'templates', 't1.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				expect(t.sharedStrings).toEqual([
-					"Name", "Role", "Plan table", "${table:planData.name}",
-					"${table:planData.role}", "${table:planData.days}",
-					"${dates}", "${revision}",
-					"Extracted on ${extractDate}"
-				]);
+			await template.loadFile(filename_in);
 
-				done();
-			});
-
+			expect(template.sharedStrings).toEqual([
+				'Name', 'Role', 'Plan table', '${table:planData.name}',
+				'${table:planData.role}', '${table:planData.days}',
+				'${dates}', '${revision}',
+				'Extracted on ${extractDate}'
+			]);
 		});
 
-		it("can write changed shared strings", function(done) {
+		it('can write changed shared strings', async () =>  {
+			const template = new XlsxTemplate();
 
-			fs.readFile(path.join(__dirname, 'templates', 't1.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
+			await template.loadFile(filename_in);
 
-				t.replaceString("Plan table", "The plan");
+			template.replaceString('Plan table', 'The plan');
 
-				await t.writeSharedStrings();
+			await template.writeSharedStrings();
 
-				var text = await t.archive.file("xl/sharedStrings.xml").async('string');
-				expect(text).not.toMatch("<si><t>Plan table</t></si>");
-				expect(text).toMatch("<si><t>The plan</t></si>");
+			let text = await template.archive.file('xl/sharedStrings.xml').async('string');
 
-				done();
-			});
-
+			expect(text).not.toMatch('<si><t>Plan table</t></si>');
+			expect(text).toMatch('<si><t>The plan</t></si>');
 		});
 
-		it("can substitute values and generate a file", function(done) {
+		it('can substitute values and generate a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't1.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -73,7 +65,11 @@ describe("CRUD operations", function() {
 				await t.substitute(1, {
 					extractDate: new Date("2013-01-02"),
 					revision: 10,
-					dates: [new Date("2013-01-01"), new Date("2013-01-02"), new Date("2013-01-03")],
+					dates: [
+						new Date("2013-01-01"), 
+						new Date("2013-01-02"), 
+						new Date("2013-01-03")
+					],
 					planData: [
 						{
 							name: "John Smith",
@@ -171,10 +167,9 @@ describe("CRUD operations", function() {
 
 				done();
 			});
-
 		});
 
-		it("can substitute values with descendant properties and generate a file", function(done) {
+		it('can substitute values with descendant properties and generate a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't2.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -286,7 +281,7 @@ describe("CRUD operations", function() {
 
 		});
 		
-		it("can substitute values when single item array contains an object and generate a file", function(done) {
+		it('can substitute values when single item array contains an object and generate a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't3.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -347,7 +342,7 @@ describe("CRUD operations", function() {
 
 		});
 		
-		it("can substitute values when single item array contains an object with sub array containing primatives and generate a file", function(done) {
+		it('can substitute values when single item array contains an object with sub array containing primatives and generate a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't2.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -420,7 +415,7 @@ describe("CRUD operations", function() {
 
 		});
 
-		it("moves columns left or right when filling lists", function(done) {
+		it('moves columns left or right when filling lists', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 'test-cols.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -471,7 +466,7 @@ describe("CRUD operations", function() {
 
 		});
 
-		it("moves rows down when filling tables", function(done) {
+		it('moves rows down when filling tables', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 'test-tables.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -611,12 +606,12 @@ describe("CRUD operations", function() {
 
 		});
 
-		it("replaces hyperlinks in sheet", function(done){
+		it('replaces hyperlinks in sheet', done => {
 			fs.readFile(path.join(__dirname, 'templates', 'test-hyperlinks.xlsx'), async function(err, data) {
 			expect(err).toBeNull();
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
+			var t = new XlsxTemplate();
+			await t.loadTemplate(data);
 
 			await t.substitute(1, {
 				email: "john@bob.com",
@@ -643,72 +638,78 @@ describe("CRUD operations", function() {
 			});
 		});
 
-		it("moves named tables, named cells and merged cells", function(done) {
+		it('moves named tables, named cells and merged cells', async () => {
+			const template = new XlsxTemplate();
 
-			fs.readFile(path.join(__dirname, 'templates', 'test-named-tables.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+			const filename_in = path.join(__dirname, 'templates', 'test-named-tables.xlsx');
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
+			await template.loadFile(filename_in);
 
-				await t.substitute(1, {
-					ages: 
-					[
-						{name: "John", age: 10},
-						{name: "Bill", age: 12}
-					],
-					days: [ "Monday", "Tuesday", "Wednesday" ],
-					hours: 
-					[
-						{name: "Bob", days: [10, 20, 30]},
-						{name: "Jim", days: [12, 24, 36]}
-					],
-					progress: 100
-				});
-
-				var newData = await t.generate();
-
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot(),
-					workbook      = etree.parse(await t.archive.file("xl/workbook.xml").async('string')).getroot(),
-					table1        = etree.parse(await t.archive.file("xl/tables/table1.xml").async('string')).getroot(),
-					table2        = etree.parse(await t.archive.file("xl/tables/table2.xml").async('string')).getroot(),
-					table3        = etree.parse(await t.archive.file("xl/tables/table3.xml").async('string')).getroot();
-
-				// Dimensions should be updated
-				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:L29");
-
-				// Named ranges have moved
-				expect(workbook.find("./definedNames/definedName[@name='BelowTable']").text).toEqual("Tables!$B$18");
-				expect(workbook.find("./definedNames/definedName[@name='Moving']").text).toEqual("Tables!$G$8");
-				expect(workbook.find("./definedNames/definedName[@name='RangeBelowTable']").text).toEqual("Tables!$B$19:$C$19");
-				expect(workbook.find("./definedNames/definedName[@name='RangeRightOfTable']").text).toEqual("Tables!$E$14:$F$14");
-				expect(workbook.find("./definedNames/definedName[@name='RightOfTable']").text).toEqual("Tables!$F$8");
-
-				// Merged cells have moved
-				expect(sheet1.find("./mergeCells/mergeCell[@ref='B2:C2']")).not.toBeNull(); // title - unchanged
-
-				expect(sheet1.find("./mergeCells/mergeCell[@ref='B10:C10']")).toBeNull(); // pushed down
-				expect(sheet1.find("./mergeCells/mergeCell[@ref='B12:C12']")).not.toBeNull(); // pushed down
-
-				expect(sheet1.find("./mergeCells/mergeCell[@ref='E7:F7']")).toBeNull(); // pushed down and accross
-				expect(sheet1.find("./mergeCells/mergeCell[@ref='G8:H8']")).not.toBeNull(); // pushed down and accross
-
-				// Table ranges and autofilter definitions have moved
-				expect(table1.attrib.ref).toEqual("B4:C7"); // Grown
-				expect(table1.find("./autoFilter").attrib.ref).toEqual("B4:C6"); // Grown
-
-				expect(table2.attrib.ref).toEqual("B8:E10"); // Grown and pushed down
-				expect(table2.find("./autoFilter").attrib.ref).toEqual("B8:E10"); // Grown and pushed down
-
-				expect(table3.attrib.ref).toEqual("C14:D16"); // Grown and pushed down
-				expect(table3.find("./autoFilter").attrib.ref).toEqual("C14:D16"); // Grown and pushed down
-
-				// XXX: For debugging only
-				fs.writeFileSync('test/output/test5.xlsx', newData, 'binary');
-
-				done();
+			await template.substitute(1, {
+				ages: 
+				[
+					{ 
+						name: 'John', 
+						age: 10 
+					},
+					{ 
+						name: 'Bill', 
+						age: 12 
+					}
+				],
+				days: [ 'Monday', 'Tuesday', 'Wednesday' ],
+				hours: 
+				[
+					{
+						name: 'Bob', 
+						days: [ 10, 20, 30 ]
+					},
+					{
+						name: 'Jim', 
+						days: [ 12, 24, 36 ]
+					}
+				],
+				progress: 100
 			});
 
+			const buffer_modify = await template.generate();
+
+			let sheet1   = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+			let	workbook = etree.parse(await template.archive.file('xl/workbook.xml').async('string')).getroot();
+			let	table1   = etree.parse(await template.archive.file('xl/tables/table1.xml').async('string')).getroot();
+			let	table2   = etree.parse(await template.archive.file('xl/tables/table2.xml').async('string')).getroot();
+			let	table3   = etree.parse(await template.archive.file('xl/tables/table3.xml').async('string')).getroot();
+
+			// Dimensions should be updated
+			expect(sheet1.find('./dimension').attrib.ref).toEqual('B2:L29');
+
+			// Named ranges have moved
+			expect(workbook.find("./definedNames/definedName[@name='BelowTable']").text).toEqual("Tables!$B$18");
+			expect(workbook.find("./definedNames/definedName[@name='Moving']").text).toEqual("Tables!$G$8");
+			expect(workbook.find("./definedNames/definedName[@name='RangeBelowTable']").text).toEqual("Tables!$B$19:$C$19");
+			expect(workbook.find("./definedNames/definedName[@name='RangeRightOfTable']").text).toEqual("Tables!$E$14:$F$14");
+			expect(workbook.find("./definedNames/definedName[@name='RightOfTable']").text).toEqual("Tables!$F$8");
+
+			// Merged cells have moved
+			expect(sheet1.find("./mergeCells/mergeCell[@ref='B2:C2']")).not.toBeNull(); // title - unchanged
+
+			expect(sheet1.find("./mergeCells/mergeCell[@ref='B10:C10']")).toBeNull(); // pushed down
+			expect(sheet1.find("./mergeCells/mergeCell[@ref='B12:C12']")).not.toBeNull(); // pushed down
+
+			expect(sheet1.find("./mergeCells/mergeCell[@ref='E7:F7']")).toBeNull(); // pushed down and accross
+			expect(sheet1.find("./mergeCells/mergeCell[@ref='G8:H8']")).not.toBeNull(); // pushed down and accross
+
+			// Table ranges and autofilter definitions have moved
+			expect(table1.attrib.ref).toEqual('B4:C7'); // Grown
+			expect(table1.find('./autoFilter').attrib.ref).toEqual('B4:C6'); // Grown
+
+			expect(table2.attrib.ref).toEqual('B8:E10'); // Grown and pushed down
+			expect(table2.find('./autoFilter').attrib.ref).toEqual('B8:E10'); // Grown and pushed down
+
+			expect(table3.attrib.ref).toEqual('C14:D16'); // Grown and pushed down
+			expect(table3.find('./autoFilter').attrib.ref).toEqual('C14:D16'); // Grown and pushed down
+
+			fs.writeFileSync('test/output/test5.xlsx', buffer_modify);
 		});
 
 		it('Correctly parse when formula in the file', async () => {
@@ -720,76 +721,68 @@ describe("CRUD operations", function() {
 
 			await template.substitute(1, {
 				people: [
-					{
-						name: "John Smith",
-						age: 55,
-					},
-					{
-						name: "John Doe",
-						age: 35,
-					}
+					{ name: 'John Smith', age: 55 },
+					{ name: 'John Doe', age: 35 }
 				]
 			});
 		});
 
-		it("Correctly recalculate formula", function(done) {
-			fs.readFile(path.join(__dirname, 'templates', 'test-formula.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+		it('Correctly recalculate formula', async () => {
+			const template = new XlsxTemplate();
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				await t.substitute(1, {
-					data: [
-						{ name: 'A', quantity: 10, unitCost: 3 },
-						{ name: 'B', quantity: 15, unitCost: 5 },
-					]
-				});
+			const filename_in = path.join(__dirname, 'templates', 'test-formula.xlsx');
 
-				var newData = await t.generate();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
-				expect(sheet1).toBeDefined();
+			await template.loadFile(filename_in);
 
-				expect(sheet1.find("./sheetData/row/c[@r='D2']/f").text).toEqual("Table3[Qty]*Table3[UnitCost]");
-				expect(sheet1.find("./sheetData/row/c[@r='D2']/v")).toBeNull();
-				
-				// This part is not working
-				// expect(sheet1.find("./sheetData/row/c[@r='D3']/f").text).toEqual("Table3[Qty]*Table3[UnitCost]");
-				
-				// fs.writeFileSync('test/output/test6.xlsx', newData, 'binary');
-				done();
-			});        
+			await template.substitute(1, {
+				data: [
+					{ name: 'A', quantity: 10, unitCost: 3 },
+					{ name: 'B', quantity: 15, unitCost: 5 },
+				]
+			});
+
+			const buffer_modify = await template.generate();
+
+			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
+			expect(sheet1).toBeDefined();
+			expect(sheet1.find("./sheetData/row/c[@r='D2']/f").text).toEqual("Table3[Qty]*Table3[UnitCost]");
+			expect(sheet1.find("./sheetData/row/c[@r='D2']/v")).toBeNull();
+			
+			// This part is not working
+			//expect(sheet1.find("./sheetData/row/c[@r='D3']/f").text).toEqual("Table3[Qty]*Table3[UnitCost]");
+			
+			//fs.writeFileSync('test/output/test6.xlsx', buffer_modify);       
 		});
 		
-		it("File without dimensions works", function(done) {
-			fs.readFile(path.join(__dirname, 'templates', 'gdocs.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+		it('File without dimensions works', async () => {
+			const template = new XlsxTemplate();
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				await t.substitute(1, {
-					planData: [
-						{ name: 'A', role: 'Role 1' },
-						{ name: 'B', role: 'Role 2' },
-					]
-				});
+			const filename_in = path.join(__dirname, 'templates', 'gdocs.xlsx');
 
-				var newData = await t.generate();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
-				expect(sheet1).toBeDefined();
+			await template.loadFile(filename_in);
 
-				// fs.writeFileSync('test/output/test7.xlsx', newData, 'binary');
-				done();
-			});        
+			await template.substitute(1, {
+				planData: [
+					{ name: 'A', role: 'Role 1' },
+					{ name: 'B', role: 'Role 2' },
+				]
+			});
+
+			const buffer_modify = await template.generate();
+
+			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+			expect(sheet1).toBeDefined();
+
+			//fs.writeFileSync('test/output/test7.xlsx', buffer_modify);      
 		});
 		
 		it('Array indexing', async () => {
+			const template = new XlsxTemplate();
+
 			const filename_in = path.join(__dirname, 'templates', 'test-array.xlsx');
 
-			const buffer = fs.readFileSync(filename_in);
-
-			let template = new XlsxTemplate();
-
-			await template.loadTemplate(buffer);
+			await template.loadFile(filename_in);
 
 			await template.substitute(1, {
 				data: [
@@ -799,8 +792,9 @@ describe("CRUD operations", function() {
 			});
 
 			let buffer_modify = await template.generate();
-			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
-				sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
+			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
+			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 
 			expect(sheet1).toBeDefined();
 			expect(sheet1.find("./sheetData/row/c[@r='A2']/v")).not.toBeNull();
@@ -808,117 +802,126 @@ describe("CRUD operations", function() {
 			expect(sheet1.find("./sheetData/row/c[@r='B2']/v")).not.toBeNull();
 			expect(getSharedString(sharedStrings, sheet1, "B2")).toEqual('B');
 			
-			// fs.writeFileSync('test/output/test8.xlsx', buffer_modify, 'binary');   
+			// fs.writeFileSync('test/output/test8.xlsx', buffer_modify);   
 		});
 		
-		it("Arrays with single element", function(done) {
-			fs.readFile(path.join(__dirname, 'templates', 'test-nested-arrays.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+		it('Arrays with single element', async () => {
+			const template = new XlsxTemplate();
 
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				var data_values = { "sales": [ { "payments": [123] } ] };
-				await t.substitute(1, data_values);
+			const filename_in = path.join(__dirname, 'templates', 'test-nested-arrays.xlsx');
 
-				var newData = await t.generate();
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
-					sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
-				expect(sheet1).toBeDefined();
-				var a1 = sheet1.find("./sheetData/row/c[@r='A1']/v");
-				var firstElement = sheet1.findall("./sheetData/row/c[@r='A1']");
-				expect(a1).not.toBeNull();
-				expect(a1.text).toEqual("123");
-				expect(firstElement).not.toBeNull();
-				expect(firstElement.length).toEqual(1);
-				
-				fs.writeFileSync('test/output/test-nested-arrays.xlsx', newData, 'binary');
-				done();
-			});        
-		});
+			await template.loadFile(filename_in);
 
-		it("will correctly fill cells on all rows where arrays are used to dynamically render multiple cells", function (done) {
-			fs.readFile(path.join(__dirname, 'templates', 't2.xlsx'), async function (err, data) {
-				expect(err).toBeNull();
-
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-
-				await t.substitute(1, {
-					demo: { extractDate: new Date("2013-01-02") },
-					revision: 10,
-					dates: [new Date("2013-01-01"), new Date("2013-01-02"), new Date("2013-01-03")],
-					planData: [{
-							name: "John Smith",
-							role: { name: "Developer" },
-							days: [1, 2, 3]
-						},
-						{
-							name: "James Smith",
-							role: { name: "Analyst" },
-							days: [1, 2, 3, 4, 5]
-						},
-						{
-							name: "Jim Smith",
-							role: { name: "Manager" },
-							days: [1, 2, 3, 4, 5, 6, 7]
-						}
-					]
-				});
-
-				var newData = await t.generate();
-
-				// var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot(),
-				var sheet1 = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
-
-				// Dimensions should be updated
-				expect(sheet1.find("./dimension").attrib.ref).toEqual("B2:F9");
-
-				// Check length of all rows
-				expect(sheet1.find("./sheetData/row[@r='7']")._children.length).toEqual(2 + 3);
-				expect(sheet1.find("./sheetData/row[@r='8']")._children.length).toEqual(2 + 5);
-				expect(sheet1.find("./sheetData/row[@r='9']")._children.length).toEqual(2 + 7);
-
-				fs.writeFileSync('test/output/test8.xlsx', newData, 'binary');
-
-				done();
+			await template.substitute(1, { 
+				sales: [ 
+					{ payments: [ 123 ] } 
+				] 
 			});
+
+			let buffer_modify = await template.generate();
+
+			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
+			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
+			expect(sheet1).toBeDefined();
+
+			let a1 = sheet1.find("./sheetData/row/c[@r='A1']/v");
+			let firstElement = sheet1.findall("./sheetData/row/c[@r='A1']");
+
+			expect(a1).not.toBeNull();
+			expect(a1.text).toEqual('123');
+			expect(firstElement).not.toBeNull();
+			expect(firstElement.length).toEqual(1);
+			
+			fs.writeFileSync('test/output/test-nested-arrays.xlsx', buffer_modify);        
 		});
+
+		it('will correctly fill cells on all rows where arrays are used to dynamically render multiple cells', async () => {
+			const template = new XlsxTemplate();
+
+			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
+
+			await template.loadFile(filename_in);
+
+			await template.substitute(1, { 
+				demo: { 
+					extractDate: new Date('2013-01-02') 
+				},
+				revision: 10,
+				dates: [
+					new Date('2013-01-01'), 
+					new Date('2013-01-02'), 
+					new Date('2013-01-03')
+				],
+				planData: [
+					{
+						name: 'John Smith',
+						role: { name: 'Developer' },
+						days: [1, 2, 3]
+					},
+					{
+						name: 'James Smith',
+						role: { name: 'Analyst' },
+						days: [1, 2, 3, 4, 5]
+					},
+					{
+						name: 'Jim Smith',
+						role: { name: 'Manager' },
+						days: [1, 2, 3, 4, 5, 6, 7]
+					}
+				]
+			});
+
+			let buffer_modify = await template.generate();
+
+			// let sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
+			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
+			// Dimensions should be updated
+			expect(sheet1.find('./dimension').attrib.ref).toEqual('B2:F9');
+
+			// Check length of all rows
+			expect(sheet1.find("./sheetData/row[@r='7']")._children.length).toEqual(2 + 3);
+			expect(sheet1.find("./sheetData/row[@r='8']")._children.length).toEqual(2 + 5);
+			expect(sheet1.find("./sheetData/row[@r='9']")._children.length).toEqual(2 + 7);
+
+			fs.writeFileSync('test/output/test8.xlsx', buffer_modify);
+		});
+
 	});
 	
-	describe("Multiple sheets", function() {
-		it("Each sheet should take each name", function (done) {
-			fs.readFile(path.join(__dirname, 'templates', 'multple-sheets-arrays.xlsx'), async function(err, data) {
-				expect(err).toBeNull();
+	describe('Multiple sheets', () => {
 
-				// Create a template
-				var t = new XlsxTemplate();
-				await t.loadTemplate(data);
-				for (let sheetNumber = 1; sheetNumber <= 2; sheetNumber++) {
-					// Set up some placeholder values matching the placeholders in the template
-					var values = {
-						page: 'page: ' + sheetNumber,
-						sheetNumber
-					};
+		it('Each sheet should take each name', async () => {
+			const template = new XlsxTemplate();
+
+			const filename_in = path.join(__dirname, 'templates', 'multple-sheets-arrays.xlsx');
+
+			await template.loadFile(filename_in);
+
+			for (let sheetNumber = 1; sheetNumber <= 2; sheetNumber++) {		
+				await template.substitute(sheetNumber, {
+					page: 'page: ' + sheetNumber,
+					sheetNumber
+				});
+			}
+		
+			let buffer_modify = await template.generate();
+
+			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
+			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+			let sheet2        = etree.parse(await template.archive.file('xl/worksheets/sheet2.xml').async('string')).getroot();
+
+			expect(sheet1).toBeDefined();
+			expect(sheet2).toBeDefined();
+
+			expect(getSharedString(sharedStrings, sheet1, 'A1')).toEqual('page: 1');
+			expect(getSharedString(sharedStrings, sheet2, 'A1')).toEqual('page: 2');
+			expect(getSharedString(sharedStrings, sheet1, 'A2')).toEqual('Page 1');
+			expect(getSharedString(sharedStrings, sheet2, 'A2')).toEqual('Page 2');
 			
-					// Perform substitution
-					await t.substitute(sheetNumber, values);
-				}
-			
-				// Get binary data
-				var newData = await t.generate();
-				var sharedStrings = etree.parse(await t.archive.file("xl/sharedStrings.xml").async('string')).getroot();
-				var sheet1        = etree.parse(await t.archive.file("xl/worksheets/sheet1.xml").async('string')).getroot();
-				var sheet2        = etree.parse(await t.archive.file("xl/worksheets/sheet2.xml").async('string')).getroot();
-				expect(sheet1).toBeDefined();
-				expect(sheet2).toBeDefined();
-				expect(getSharedString(sharedStrings, sheet1, "A1")).toEqual("page: 1");
-				expect(getSharedString(sharedStrings, sheet2, "A1")).toEqual("page: 2");
-				expect(getSharedString(sharedStrings, sheet1, "A2")).toEqual("Page 1");
-				expect(getSharedString(sharedStrings, sheet2, "A2")).toEqual("Page 2");
-				
-				fs.writeFileSync('test/output/multple-sheets-arrays.xlsx', newData, 'binary');
-				done();
-			});
+			fs.writeFileSync('test/output/multple-sheets-arrays.xlsx', buffer_modify);
 		});
+
 	});
 });
