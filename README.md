@@ -10,8 +10,6 @@ to values and then load the template, substitute the placeholders for the
 relevant values, and generate a new .xlsx file that you can then serve to the
 user.
 
-## Placeholders
-
 Placeholders are inserted in cells in a spreadsheet. It does not matter how
 those cells are formatted, so e.g. it is OK to insert a placeholder (which is
 text content) into a cell formatted as a number or currecy or date, if you
@@ -25,9 +23,9 @@ To make this magic happen, you need some code like this:
 const XlsxTemplate = require('xlsx-template');
 const fs = require('fs');
 
-let template = new XlsxTemplate();
+const template = new XlsxTemplate();
 
-let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
+const filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
 
 await template.loadFile(filename_in);
 
@@ -49,13 +47,13 @@ let data = {
 };
 
 // Perform substitution
-template.substitute(sheet_id, data);
+await template.substitute(sheet_id, data);
 
 // Get binary data
 let buffer_modify = template.generate();
 
 // Save file
-let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
+const filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
 
 fs.writeFileSync(filename_out, buffer_modify);
 ```
@@ -81,7 +79,7 @@ For example:
 
 Given data
 
-    let template = { extractDates: ["Jun-01-2022", "Jun-01-2023" ]}
+    let data = { extractDates: [ 'Jun-01-2022', 'Jun-01-2023' ]}
 
 which will be applied to following template
 
@@ -153,7 +151,7 @@ You can pass imageRootPath option for setting the root folder for your images.
 
     let option = { imageRootPath: '/path/to/your/image/dir' }  
     ...  
-    let t = new XlsxTemplate(option);
+    const template = new XlsxTemplate(option);
 
 If the image Placeholders is in standard cell, image is insert normaly  
 If the image Placeholders is in merge cell, image feet (at the best) the size of the merge cell.
@@ -162,7 +160,7 @@ You can pass imageRatio option for adjust the ratio image (in percent and for st
  
     let option = { imageRatio: 75.4 }  
     ...  
-    let t = new XlsxTemplate(option);
+    const template = new XlsxTemplate(option);
 
 At this stage, `data` is a string blob representing the compressed archive that
 is the `.xlsx` file (that's right, a `.xlsx` file is a zip file of XML files,
@@ -170,9 +168,9 @@ if you didn't know). You can send this back to a client, store it to disk,
 attach it to an email or do whatever you want with it.
 
 You can pass options to `generate()` to set a different return type. use
-`{type: 'uint8array'}` to generate a `Uint8Array`, `arraybuffer`, `blob`,
+`{ type: 'uint8array' }` to generate a `Uint8Array`, `arraybuffer`, `blob`,
 `nodebuffer` to generate an `ArrayBuffer`, `Blob` or `nodebuffer`, or
-`base64` to generate a base64-encoded string. Default: `{type: 'uint8array'}`
+`base64` to generate a base64-encoded string. Default: `{ type: 'uint8array' }`
 
 ## Caveats
 
