@@ -89,7 +89,7 @@ You can insert images with
 
 Given data
 
-    let template = { imageName: "helloImage.jpg"}
+    let template = { imageName: 'helloImage.jpg' }
 
 You can insert a list of images with   
 
@@ -97,7 +97,7 @@ You can insert a list of images with
 
 Given data
 
-    let template = { images: [ { name : "helloImage1.jpg" }, { name : "helloImage2.jpg" } ]}
+    let template = { images: [ { name : 'helloImage1.jpg' }, { name : 'helloImage2.jpg' } ]}
 
 Supported image format in given data : 
 - Base64 string
@@ -108,7 +108,7 @@ Supported image format in given data :
 
 You can pass imageRootPath option for setting the root folder for your images.  
 
-    let option = { imageRootPath : "/path/to/your/image/dir" }  
+    let option = { imageRootPath : '/path/to/your/image/dir' }  
     ...  
     let t = new XlsxTemplate(data, option);
 
@@ -131,38 +131,42 @@ To make this magic happen, you need some code like this:
 const XlsxTemplate = require('xlsx-template');
 const fs = require('fs');
 
-let filename = path.join(__dirname, 'templates', 'template1.xlsx');
+let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
 
 // Load an XLSX file into memory
-fs.readFile(filename, function(err, data) {
-	// Create a template
-	let template = new XlsxTemplate(data);
+const buffer = fs.readFileSync(filename_in);
 
-	// Replacements take place on first sheet
-	let sheetNumber = 1;
+let template = new XlsxTemplate();
 
-	// Set up some placeholder values matching the placeholders in the template
-	let data = {
-		extractDate: new Date(),
-		dates: [ 
-			new Date('2013-06-01'), 
-			new Date('2013-06-02'), 
-			new Date('2013-06-03')
-		],
-		people: [
-			{ name: 'John Smith', age: 20 },
-			{ name: 'Bob Johnson', age: 22 }
-		]
-	};
+await template.loadTemplate(buffer);
 
-	// Perform substitution
-	template.substitute(sheetNumber, data);
+// Replacements take place on first sheet
+let sheet_id = 1;
 
-	// Get binary data
-	let buffer = template.generate({ type: 'uint8array' });
+// Set up some placeholder values matching the placeholders in the template
+let data = {
+	extractDate: new Date(),
+	dates: [ 
+		new Date('2013-06-01'), 
+		new Date('2013-06-02'), 
+		new Date('2013-06-03')
+	],
+	people: [
+		{ name: 'John Smith', age: 20 },
+		{ name: 'Bob Johnson', age: 22 }
+	]
+};
 
-	// Your code...
-});
+// Perform substitution
+template.substitute(sheet_id, data);
+
+// Get binary data
+let buffer_modify = template.generate({ type: 'uint8array' });
+
+// Save file
+let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
+
+fs.writeFileSync('./example/output.xlsx', buffer_modify);
 ```
 
 At this stage, `data` is a string blob representing the compressed archive that
