@@ -17,6 +17,49 @@ those cells are formatted, so e.g. it is OK to insert a placeholder (which is
 text content) into a cell formatted as a number or currecy or date, if you
 expect the placeholder to resolve to a number or currency or date.
 
+## Quick example
+
+To make this magic happen, you need some code like this:
+
+```
+const XlsxTemplate = require('xlsx-template');
+const fs = require('fs');
+
+let template = new XlsxTemplate();
+
+let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
+
+await template.loadFile(filename_in);
+
+// Replacements take place on first sheet
+let sheet_id = 1;
+
+// Set up some placeholder values matching the placeholders in the template
+let data = {
+	extractDate: new Date(),
+	dates: [ 
+		new Date('2013-06-01'), 
+		new Date('2013-06-02'), 
+		new Date('2013-06-03')
+	],
+	people: [
+		{ name: 'John Smith', age: 20 },
+		{ name: 'Bob Johnson', age: 22 }
+	]
+};
+
+// Perform substitution
+template.substitute(sheet_id, data);
+
+// Get binary data
+let buffer_modify = template.generate();
+
+// Save file
+let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
+
+fs.writeFileSync(filename_out, buffer_modify);
+```
+
 ### Scalars
 
 Simple placholders take the format `${name}`. Here, `name` is the name of a
@@ -120,51 +163,6 @@ You can pass imageRatio option for adjust the ratio image (in percent and for st
     let option = { imageRatio: 75.4 }  
     ...  
     let t = new XlsxTemplate(option);
-
-
-
-## Generating reports
-
-To make this magic happen, you need some code like this:
-
-```
-const XlsxTemplate = require('xlsx-template');
-const fs = require('fs');
-
-let template = new XlsxTemplate();
-
-let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
-
-await template.loadFile(filename_in);
-
-// Replacements take place on first sheet
-let sheet_id = 1;
-
-// Set up some placeholder values matching the placeholders in the template
-let data = {
-	extractDate: new Date(),
-	dates: [ 
-		new Date('2013-06-01'), 
-		new Date('2013-06-02'), 
-		new Date('2013-06-03')
-	],
-	people: [
-		{ name: 'John Smith', age: 20 },
-		{ name: 'Bob Johnson', age: 22 }
-	]
-};
-
-// Perform substitution
-template.substitute(sheet_id, data);
-
-// Get binary data
-let buffer_modify = template.generate();
-
-// Save file
-let filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
-
-fs.writeFileSync(filename_out, buffer_modify);
-```
 
 At this stage, `data` is a string blob representing the compressed archive that
 is the `.xlsx` file (that's right, a `.xlsx` file is a zip file of XML files,
