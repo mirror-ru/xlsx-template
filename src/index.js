@@ -1019,6 +1019,8 @@ class Workbook {
     substituteTable(row, newTableRows, cells, cell, namedTables, substitution, key, placeholder, drawing) {
         var self = this, newCellsInserted = 0; // on the original row
 
+		// Credit: kennycreeper - Fix merge cells style
+		//const mergeCell = self.sheet.root.findall('mergeCells/mergeCell').find(c => self.splitRange(c.attrib.ref).start === cell.attrib.r);
 
         // if no elements, blank the cell, but don't delete it
         if (substitution.length === 0) {
@@ -1077,6 +1079,27 @@ class Workbook {
 
                         // Add the cell that previously held the placeholder
                         newRow.append(newCell);
+
+						// Credit: kennycreeper - Fix merge cells style
+						/*if (mergeCell) {
+                            var mergeRange = self.splitRange(mergeCell.attrib.ref);
+							var mergeStart = self.splitRef(mergeRange.start);
+                            var mergeEnd   = self.splitRef(mergeRange.end);
+
+                            for (let colNum = self.charToNum(mergeStart.col) + 1; colNum <= self.charToNum(mergeEnd.col); colNum++) {
+                                const lastRow = self.sheet.root.find('sheetData').getItem(mergeStart.row - 1);
+                                const upperCell = lastRow.getItem(colNum - 1);
+
+                                const cell = self.cloneElement(upperCell);
+
+                                cell.attrib.r = self.joinRef({
+                                	row: newRow.attrib.r,
+                                	col: self.numToChar(colNum)
+                                });
+
+                                newRow.append(cell);
+                            }
+                        }*/
                     }
 
                     // expand named table range if necessary
@@ -1141,7 +1164,7 @@ class Workbook {
         var imageHeight = self.pixelsToEMUs(dimension.height);
         // var sheet = await self.loadSheet(self.substitueSheetName);
         var imageInMergeCell = false;
-        self.sheet.root.findall("mergeCells/mergeCell").forEach(function (mergeCell) {
+        self.sheet.root.findall('mergeCells/mergeCell').forEach(mergeCell => {
             // If image is in merge cell, fit the image
             if (self.cellInMergeCells(cell, mergeCell)) {
                 var mergeCellWidth = self.getWidthMergeCell(mergeCell, self.sheet);
@@ -1207,6 +1230,7 @@ class Workbook {
         var prstGeom = etree.SubElement(spPr, 'a:prstGeom', { 'prst': 'rect' });
         var avLst = etree.SubElement(prstGeom, 'a:avLst');
         var clientData = etree.SubElement(imagePart, 'xdr:clientData');
+
         return true;
     }
     // Clone an element. If `deep` is true, recursively clone children
@@ -1324,10 +1348,10 @@ class Workbook {
     pushDown(workbook, sheet, tables, currentRow, numRows) {
         var self = this;
 
-        var mergeCells = sheet.find("mergeCells");
+        var mergeCells = sheet.find('mergeCells');
 
         // Update merged cells below this row
-        sheet.findall("mergeCells/mergeCell").forEach(function (mergeCell) {
+        sheet.findall('mergeCells/mergeCell').forEach(function (mergeCell) {
             var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStart = self.splitRef(mergeRange.start), mergeEnd = self.splitRef(mergeRange.end);
 
             if (mergeStart.row > currentRow) {
@@ -1381,7 +1405,7 @@ class Workbook {
         });
 
         // Named cells/ranges
-        workbook.findall("definedNames/definedName").forEach(function (name) {
+        workbook.findall('definedNames/definedName').forEach(function (name) {
             var ref = name.text;
             if (self.isRange(ref)) {
                 var namedRange = self.splitRange(ref), //TODO : I think is there a bug, the ref is equal to [sheetName]![startRange]:[endRange]
