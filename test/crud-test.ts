@@ -712,13 +712,11 @@ describe("CRUD operations", function() {
 		});
 
 		it('Correctly parse when formula in the file', async () => {
-			const filename_in = path.join(__dirname, 'templates', 'template.xlsx');
-
-			const buffer = fs.readFileSync(filename_in);
-
 			const template = new XlsxTemplate();
 
-			await template.loadTemplate(buffer);
+			const filename_in = path.join(__dirname, 'templates', 'template.xlsx');
+
+			await template.loadFile(filename_in);
 
 			await template.substitute(1, {
 				people: [

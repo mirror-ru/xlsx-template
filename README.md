@@ -1,4 +1,4 @@
-# XLSX Template
+# XLSX Template Next
 
 This module provides a means of generating "real" Excel reports (i.e. not CSV
 files) in NodeJS applications.
@@ -89,7 +89,7 @@ You can insert images with
 
 Given data
 
-    let template = { imageName: 'helloImage.jpg' }
+    let data = { imageName: 'helloImage.jpg' }
 
 You can insert a list of images with   
 
@@ -97,7 +97,7 @@ You can insert a list of images with
 
 Given data
 
-    let template = { images: [ { name : 'helloImage1.jpg' }, { name : 'helloImage2.jpg' } ]}
+    let data = { images: [ { name : 'helloImage1.jpg' }, { name : 'helloImage2.jpg' } ]}
 
 Supported image format in given data : 
 - Base64 string
@@ -108,18 +108,18 @@ Supported image format in given data :
 
 You can pass imageRootPath option for setting the root folder for your images.  
 
-    let option = { imageRootPath : '/path/to/your/image/dir' }  
+    let option = { imageRootPath: '/path/to/your/image/dir' }  
     ...  
-    let t = new XlsxTemplate(data, option);
+    let t = new XlsxTemplate(option);
 
 If the image Placeholders is in standard cell, image is insert normaly  
 If the image Placeholders is in merge cell, image feet (at the best) the size of the merge cell.
 
 You can pass imageRatio option for adjust the ratio image (in percent and for standard cell - not applied on merge cell)
  
-    let option = { imageRatio : 75.4 }  
+    let option = { imageRatio: 75.4 }  
     ...  
-    let t = new XlsxTemplate(data, option);
+    let t = new XlsxTemplate(option);
 
 
 
@@ -131,14 +131,11 @@ To make this magic happen, you need some code like this:
 const XlsxTemplate = require('xlsx-template');
 const fs = require('fs');
 
-let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
-
-// Load an XLSX file into memory
-const buffer = fs.readFileSync(filename_in);
-
 let template = new XlsxTemplate();
 
-await template.loadTemplate(buffer);
+let filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
+
+await template.loadFile(filename_in);
 
 // Replacements take place on first sheet
 let sheet_id = 1;
