@@ -1109,9 +1109,6 @@ class Workbook {
     substituteTable(row, newTableRows, cells, cell, namedTables, substitution, key, placeholder, drawing) {
         var self = this, newCellsInserted = 0; // on the original row
 
-		// Credit: kennycreeper - Fix merge cells style
-        const mergeCell = self.sheet.root.findall('mergeCells/mergeCell').find(c => self.splitRange(c.attrib.ref).start === cell.attrib.r);
-
         // if no elements, blank the cell, but don't delete it
         if (substitution.length === 0) {
             delete cell.attrib.t;
@@ -1122,12 +1119,14 @@ class Workbook {
                 var range = self.splitRange(namedTable.root.attrib.ref);
                 return self.isWithin(cell.attrib.r, range.start, range.end);
             });
+		
+			// Credit: kennycreeper - Fix merge cells style
+			const mergeCell = self.sheet.root.findall('mergeCells/mergeCell').find(c => self.splitRange(c.attrib.ref).start === cell.attrib.r);
 
             substitution.forEach((element, idx) => {
                 var newRow, newCell, newCellsInsertedOnNewRow = 0, newCells = [], value = _get(element, key, '');
 
                 if (idx === 0) { // insert in the row where the placeholders are
-
                     if (Array.isArray(value)) {
                         newCellsInserted = self.substituteArray(cells, cell, value);
                     } else if (placeholder.subType == 'image' && value != "") {
@@ -1171,27 +1170,30 @@ class Workbook {
                         // Add the cell that previously held the placeholder
                         newRow.append(newCell);
 
-						// Credit: kennycreeper - Fix merge cells style
+						// Credit: kennycreeper - Fix merge cells style, mirror-ru: some fixes
 						if (mergeCell) {
-                            var mergeRange = self.splitRange(mergeCell.attrib.ref);
-							var mergeStart = self.splitRef(mergeRange.start);
-                            var mergeEnd   = self.splitRef(mergeRange.end);
-
-                            for (let colNum = self.charToNum(mergeStart.col); colNum < self.charToNum(mergeEnd.col); colNum++) {
-                                const lastRow = self.sheet.root.find('sheetData').getItem(mergeStart.row - 1);
-                                const upperCell = lastRow.getItem(colNum);
-                                const cell = self.cloneElement(upperCell);
-                                
-                                cell.attrib.r = self.joinRef({ row: newRow.attrib.r, col: self.numToChar(colNum + 1) });
-
-                                newRow.append(cell);
-                            }
+                            let mergeRange  = self.splitRange(mergeCell.attrib.ref);
+							let mergeStart  = self.splitRef(mergeRange.start);
+                            let mergeEnd    = self.splitRef(mergeRange.end);
+							let templateRow = self.sheet.root.findall('sheetData/row').find(r => r.attrib.r === mergeStart.row);
+							
+							for (let colNum = self.charToNum(mergeStart.col); colNum < self.charToNum(mergeEnd.col); colNum++) {
+								const templateCell = templateRow.getItem(colNum);
+								
+								const cell = self.cloneElement(templateCell);
+								
+								cell.attrib.r = self.joinRef({ row: newRow.attrib.r, col: self.numToChar(colNum + 1) });
+								
+								newRow.append(cell);
+							}
                         }
                     }
 
                     // expand named table range if necessary
                     parentTables.forEach(namedTable => {
-                        var tableRoot = namedTable.root, autoFilter = tableRoot.find('autoFilter'), range = self.splitRange(tableRoot.attrib.ref);
+                        var tableRoot = namedTable.root; 
+						var autoFilter = tableRoot.find('autoFilter'); 
+						var range = self.splitRange(tableRoot.attrib.ref);
 
                         if (!self.isWithin(newCell.attrib.r, range.start, range.end)) {
                             range.end = self.nextRow(range.end);
