@@ -1,4 +1,5 @@
 /*jshint globalstrict:true, devel:true */
+/*eslint no-var:0 */
 /*tslint:disable:comment-format*/
 /*tslint:disable:typedef*/
 /*tslint:disable:max-line-length*/
@@ -6,7 +7,7 @@
 
 'use strict';
 
-const XlsxTemplate = require('../build');
+var XlsxTemplate   = require('../build');
 const fs           = require('fs');
 const path         = require('path');
 const etree        = require('elementtree');
