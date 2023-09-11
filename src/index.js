@@ -2,11 +2,11 @@
 /*eslint no-var:0 */
 /*global require, module, Buffer */
 
-var path = require('path');
-var sizeOf = require('image-size').imageSize;
-var fs = require('fs');
-var etree = require('elementtree');
-var JSZip = require('jszip');
+const path = require('path');
+const sizeOf = require('image-size').imageSize;
+const fs = require('fs');
+const etree = require('elementtree');
+const JSZip = require('jszip');
 
 const DOCUMENT_RELATIONSHIP       = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument';
 const CALC_CHAIN_RELATIONSHIP     = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain';
@@ -189,11 +189,9 @@ class Workbook {
 	 * Load a .xlsx file from filename
 	 */
 	async loadFile(filename) {
-		var self = this;
-
 		const buffer = fs.readFileSync(filename);
 
-		await self.loadTemplate(buffer);
+		await this.loadTemplate(buffer);
 	}
 
 	/**
@@ -213,8 +211,10 @@ class Workbook {
 
 		self.workbookPath = workbookPath;
 		self.prefix = path.dirname(workbookPath);
+
 		let parseTextWB = await self.archive.file(workbookPath).async('string');
 		self.workbook = etree.parse(parseTextWB).getroot();
+
 		let parseTextWBRels = await self.archive.file(self.prefix + "/" + '_rels' + "/" + path.basename(workbookPath) + '.rels').async('string');
 		self.workbookRels = etree.parse(parseTextWBRels).getroot();
 		self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
@@ -249,9 +249,8 @@ class Workbook {
 
 		var jpgType = self.contentTypes.find('Default[@Extension="jpg"]');
 
-		if (jpgType === null) {
+		if (jpgType === null)
 			etree.SubElement(self.contentTypes, 'Default', { 'ContentType': 'image/png', 'Extension': 'jpg' });
-		}
 	}
 
 	/**
@@ -501,15 +500,10 @@ class Workbook {
 	 * Build a new binary .xlsx file
 	 */
 	async build(options) {
-		var self = this;
+		if (!options)
+			options = { type: 'uint8array' };
 
-		if (!options) {
-			options = {
-				type: 'uint8array'
-			};
-		}
-
-		return await self.archive.generateAsync(options);
+		return await this.archive.generateAsync(options);
 	}
 
 	// Helpers
@@ -541,6 +535,7 @@ class Workbook {
 		var self = this;
 
 		var idx = self.sharedStrings.length;
+
 		self.sharedStrings.push(s);
 		self.sharedStringsLookup[s] = idx;
 
@@ -549,13 +544,10 @@ class Workbook {
 
 	// Get the number of a shared string, adding a new one if necessary.
 	stringIndex(s) {
-		var self = this;
+		let idx = this.sharedStringsLookup[s];
 
-		var idx = self.sharedStringsLookup[s];
-
-		if (idx === undefined) {
-			idx = self.addSharedString(s);
-		}
+		if (idx === undefined)
+			idx = this.addSharedString(s);
 
 		return idx;
 	}
@@ -566,6 +558,7 @@ class Workbook {
 		var self = this;
 
 		var idx = self.sharedStringsLookup[oldString];
+
 		if (idx === undefined) {
 			idx = self.addSharedString(newString);
 		} else {
@@ -581,7 +574,7 @@ class Workbook {
 	loadSheets(prefix, workbook, workbookRels) {
 		var sheets = [];
 
-		workbook.findall("sheets/sheet").forEach(sheet => {
+		workbook.findall('sheets/sheet').forEach(sheet => {
 			var sheetId = sheet.attrib.sheetId, relId = sheet.attrib['r:id'], relationship = workbookRels.find("Relationship[@Id='" + relId + "']"), filename = prefix + "/" + relationship.attrib.Target;
 
 			sheets.push({
@@ -607,14 +600,13 @@ class Workbook {
 			}
 		}
 
-		if (info === null && (typeof (sheet) === "number")) {
+		if (info === null && (typeof (sheet) === 'number')) {
 			//Get the sheet that corresponds to the 0 based index if the id does not work
 			info = self.sheets[sheet - 1];
 		}
 
-		if (info === null) {
-			throw new Error("Sheet " + sheet + " not found");
-		}
+		if (info === null)
+			throw new Error('Sheet ' + sheet + ' not found');
 
 		let parseTextFileName = await self.archive.file(info.filename).async('string');
 
@@ -632,9 +624,8 @@ class Workbook {
 		
 		var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = path.join(sheetDirectory, '_rels', sheetName + '.rels').replace(/\\/g, '/'), relsFile = self.archive.file(relsFilename);
 		
-		if (relsFile === null) {
+		if (relsFile === null)
 			return self.initSheetRels(sheetFilename);
-		}
 
 		let parseTextRels = await relsFile.async('string');
 
@@ -658,7 +649,7 @@ class Workbook {
 	async loadDrawing(sheet, sheetFilename, rels) {
 		var self = this;
 		var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), drawing = { filename: '', root: null };
-		var drawingPart = sheet.find("drawing");
+		var drawingPart = sheet.find('drawing');
 		if (drawingPart === null) {
 			drawing = self.initDrawing(sheet, rels);
 			return drawing;
@@ -716,9 +707,9 @@ class Workbook {
 		var self = this;
 
 		drawing.root.getchildren().forEach(drawElement => {
-			if (drawElement.tag == "xdr:twoCellAnchor") {
+			if (drawElement.tag == 'xdr:twoCellAnchor')
 				self._moveTwoCellAnchor(drawElement, fromRow, nbRow);
-			}
+		
 			// TODO : make the other tags image
 		});
 	}
@@ -730,18 +721,17 @@ class Workbook {
 		var _moveImage = (drawingElement, fromRow, nbRow) => {
 			var from = Number.parseInt(drawingElement.find('xdr:from').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
 			drawingElement.find('xdr:from').find('xdr:row').text = from;
+
 			var to = Number.parseInt(drawingElement.find('xdr:to').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
 			drawingElement.find('xdr:to').find('xdr:row').text = to;
 		};
 
-		if (self.option["moveSameLineImages"]) {
-			if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 >= fromRow) {
+		if (self.option['moveSameLineImages']) {
+			if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 >= fromRow)
 				_moveImage(drawingElement, fromRow, nbRow);
-			}
 		} else {
-			if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 > fromRow) {
+			if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 > fromRow) 
 				_moveImage(drawingElement, fromRow, nbRow);
-			}
 		}
 	}
 
@@ -792,10 +782,12 @@ class Workbook {
 		let parseTextLink = await self.archive.file(self.sharedStringsPath).async('string');
 
 		etree.parse(parseTextLink).getroot();
-		if (rels === null) {
+
+		if (rels === null)
 			return;
-		}
+		
 		const relationships = rels.root._children;
+
 		relationships.forEach(relationship => {
 			if (relationship.attrib.Type === HYPERLINK_RELATIONSHIP) {
 
@@ -803,17 +795,17 @@ class Workbook {
 
 				//Double-decode due to excel double encoding url placeholders
 				target = decodeURI(decodeURI(target));
+
 				self.extractPlaceholders(target).forEach(placeholder => {
 					const substitution = substitutions[placeholder.name];
 
-					if (substitution === undefined) {
+					if (substitution === undefined)
 						return;
-					}
+					
 					target = target.replace(placeholder.placeholder, self.stringify(substitution));
 
 					relationship.attrib.Target = encodeURI(target);
-				}
-				);
+				});
 			}
 		});
 	}
@@ -892,11 +884,11 @@ class Workbook {
 				}
 
 				++tableEnd.row;
+
 				tableRoot.attrib.ref = self.joinRange({
 					start: self.joinRef(tableStart),
 					end: self.joinRef(tableEnd),
 				});
-
 			}
 		});
 	}
@@ -929,10 +921,11 @@ class Workbook {
 	// optionally, `table`, `rowAbsolute` and `colAbsolute`.
 	splitRef(ref) {
 		var match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)?(\$)?([0-9]+)/);
+
 		return {
 			table: match && match[1] || null,
 			colAbsolute: Boolean(match && match[2]),
-			col: match && match[3] || "",
+			col: match && match[3] || '',
 			rowAbsolute: Boolean(match && match[4]),
 			row: parseInt(match && match[5], 10)
 		};
@@ -940,10 +933,10 @@ class Workbook {
 
 	// Join an object with keys `row` and `col` into a single reference string
 	joinRef(ref) {
-		return (ref.table ? ref.table + "!" : "") +
-			(ref.colAbsolute ? "$" : "") +
+		return (ref.table ? ref.table + '!' : '') +
+			(ref.colAbsolute ? '$' : '') +
 			ref.col.toUpperCase() +
-			(ref.rowAbsolute ? "$" : "") +
+			(ref.rowAbsolute ? '$' : '') +
 			Number(ref.row).toString();
 	}
 
@@ -1026,15 +1019,15 @@ class Workbook {
 	stringify(value) {
 		if (value instanceof Date) {
 			//In Excel date is a number of days since 01/01/1900
-			//           timestamp in ms    to days      + number of days from 1900 to 1970
+			//timestamp in ms    to days      + number of days from 1900 to 1970
 			return Number((value.getTime() / (1000 * 60 * 60 * 24)) + 25569);
-		} else if (typeof (value) === "number" || typeof (value) === "boolean") {
+		} else if (typeof (value) === 'number' || typeof (value) === 'boolean') {
 			return Number(value).toString();
-		} else if (typeof (value) === "string") {
+		} else if (typeof (value) === 'string') {
 			return String(value).toString();
 		}
 
-		return "";
+		return '';
 	}
 
 	// Insert a substitution value into a cell (c tag)
@@ -1049,6 +1042,7 @@ class Workbook {
 			formula.text = substitution.substr(1);
 			cell.insert(1, formula);
 			delete cell.attrib.t; //cellValue will be deleted later
+
 			return formula.text;
 		}
 
@@ -1068,36 +1062,34 @@ class Workbook {
 
 	// Perform substitution of a single value
 	substituteScalar(cell, string, placeholder, substitution) {
-		var self = this;
+		if (placeholder.full)
+			return this.insertCellValue(cell, substitution);
+		
+		let newString = string.replace(placeholder.placeholder, this.stringify(substitution));
 
-		if (placeholder.full) {
-			return self.insertCellValue(cell, substitution);
-		} else {
-			var newString = string.replace(placeholder.placeholder, self.stringify(substitution));
-			cell.attrib.t = "s";
-			return self.insertCellValue(cell, newString);
-		}
+		cell.attrib.t = 's';
+		
+		return this.insertCellValue(cell, newString);
 	}
 
 	// Perform a columns substitution from an array
 	substituteArray(cells, cell, substitution) {
-		var self = this;
-
-		var newCellsInserted = -1, // we technically delete one before we start adding back
-			currentCell = cell.attrib.r;
+		let newCellsInserted = -1; // we technically delete one before we start adding back
+		let	currentCell = cell.attrib.r;
 
 		// add a cell for each element in the list
 		substitution.forEach(element => {
 			++newCellsInserted;
 
-			if (newCellsInserted > 0) {
-				currentCell = self.nextCol(currentCell);
-			}
+			if (newCellsInserted > 0)
+				currentCell = this.nextCol(currentCell);
 
-			var newCell = self.cloneElement(cell);
-			self.insertCellValue(newCell, element);
+			let newCell = this.cloneElement(cell);
+
+			this.insertCellValue(newCell, element);
 
 			newCell.attrib.r = currentCell;
+
 			cells.push(newCell);
 		});
 
@@ -1112,11 +1104,12 @@ class Workbook {
 		// if no elements, blank the cell, but don't delete it
 		if (substitution.length === 0) {
 			delete cell.attrib.t;
+
 			self.replaceChildren(cell, []);
 		} else {
-
 			var parentTables = namedTables.filter(namedTable => {
 				var range = self.splitRange(namedTable.root.attrib.ref);
+
 				return self.isWithin(cell.attrib.r, range.start, range.end);
 			});
 		
@@ -1142,6 +1135,7 @@ class Workbook {
 					} else {
 						newRow = self.cloneElement(row, false);
 						newRow.attrib.r = self.getCurrentRow(row, newTableRows.length + 1);
+						
 						newTableRows.push(newRow);
 					}
 
@@ -1331,15 +1325,14 @@ class Workbook {
 
 	// Clone an element. If `deep` is true, recursively clone children
 	cloneElement(element, deep) {
-		var self = this;
+		let newElement = etree.Element(element.tag, element.attrib);
 
-		var newElement = etree.Element(element.tag, element.attrib);
 		newElement.text = element.text;
 		newElement.tail = element.tail;
 
 		if (deep !== false) {
 			element.getchildren().forEach(child => {
-				newElement.append(self.cloneElement(child, deep));
+				newElement.append(this.cloneElement(child, deep));
 			});
 		}
 
@@ -1382,15 +1375,16 @@ class Workbook {
 			});
 
 			rowSpan[1] += cellsInserted;
+
 			row.attrib.spans = rowSpan.join(":");
 		}
 	}
 
 	// Split a range like "A1:B1" into {start: "A1", end: "B1"}
 	splitRange(range) {
-		var split = range.split(':');
+		const [ start, end ] = range.split(':');
 
-		return { start: split[0], end: split[1] };
+		return { start, end };
 	}
 
 	// Join into a a range like "A1:B1" an object like {start: "A1", end: "B1"}
@@ -1561,10 +1555,10 @@ class Workbook {
 
 		var finalWidth = defaultWidth;
 
-		sheet.root.findall("cols/col").forEach(col => {
-			if (numCol >= col.attrib["min"] && numCol <= col.attrib["max"]) {
+		sheet.root.findall('cols/col').forEach(col => {
+			if (numCol >= col.attrib['min'] && numCol <= col.attrib['max']) {
 				if (col.attrib["width"] != undefined) {
-					finalWidth = col.attrib["width"];
+					finalWidth = col.attrib['width'];
 				}
 			}
 		});
@@ -1585,14 +1579,13 @@ class Workbook {
 	}
 
 	getHeightCell(numRow, sheet) {
-		var defaultHight = sheet.root.find("sheetFormatPr").attrib["defaultRowHeight"];
+		var defaultHight = sheet.root.find('sheetFormatPr').attrib['defaultRowHeight'];
 		var finalHeight = defaultHight;
 		
-		sheet.root.findall("sheetData/row").forEach(row => {
-			if (numRow == row.attrib["r"]) {
-				if (row.attrib["ht"] != undefined) {
-					finalHeight = row.attrib["ht"];
-				}
+		sheet.root.findall('sheetData/row').forEach(row => {
+			if (numRow == row.attrib['r']) {
+				if (row.attrib['ht'] != undefined)
+					finalHeight = row.attrib['ht'];	
 			}
 		});
 
@@ -1682,9 +1675,8 @@ class Workbook {
 		var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartCol = self.charToNum(self.splitRef(mergeRange.start).col), mergeEndCol = self.charToNum(self.splitRef(mergeRange.end).col), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
 		
 		if (cellCol >= mergeStartCol && cellCol <= mergeEndCol) {
-			if (cellRow >= mergeStartRow && cellRow <= mergeEndRow) {
-				return true;
-			}
+			if (cellRow >= mergeStartRow && cellRow <= mergeEndRow)
+				return true;	
 		}
 
 		return false;
@@ -1758,16 +1750,16 @@ class Workbook {
 	}
 
 	findMaxId(element, tag, attr, idRegex) {
-		var maxId = 0;
+		let maxId = 0;
 
 		element.findall(tag).forEach((element) => {
-			var match = idRegex.exec(element.attrib[attr]);
+			const match = idRegex.exec(element.attrib[attr]);
 			
 			if (match == null) {
 				throw new Error('Can not find the id!');
 			}
 
-			var cid = parseInt(match[1]);
+			const cid = parseInt(match[1]);
 
 			if (cid > maxId) {
 				maxId = cid;
