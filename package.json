@@ -1,6 +1,6 @@
 {
   "name": "xlsx-template-next",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Generate .xlsx (Excel) files from templates built in Excel",
   "main": "./build/index",
   "files": [
@@ -22,7 +22,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mirror-ru/xlsx-template.git"
+    "url": "https://github.com/mirror-ru/xlsx-template-next.git"
   },
   "licenses": [
     {
