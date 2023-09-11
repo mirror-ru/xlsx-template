@@ -2,11 +2,11 @@
 /*eslint no-var:0 */
 /*global require, module, Buffer */
 
-var path = require('path'),
-    sizeOf = require('image-size').imageSize,
-    fs = require('fs'),
-    etree = require('elementtree'),
-    JSZip = require('jszip');
+var path = require('path');
+var sizeOf = require('image-size').imageSize;
+var fs = require('fs');
+var etree = require('elementtree');
+var JSZip = require('jszip');
 
 const DOCUMENT_RELATIONSHIP       = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument';
 const CALC_CHAIN_RELATIONSHIP     = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain';
@@ -171,11 +171,11 @@ class Workbook {
 
                 return index1 - index2;
             })
-            .forEach(function (item, index) {
+            .forEach((item, index) => {
                 item.attrib.Id = 'rId' + (index + 1);
             });
 
-        self.workbook.findall("sheets/sheet").forEach(function (item, index) {
+        self.workbook.findall("sheets/sheet").forEach((item, index) => {
             item.attrib['r:id'] = 'rId' + (index + 1);
             item.attrib.sheetId = (index + 1).toString();
         });
@@ -231,11 +231,11 @@ class Workbook {
 		etree.parse(parseTextSharedStr).getroot().findall('si').forEach(si => {
 			var t = { text: '' };
 
-			si.findall('t').forEach(function (tmp) {
+			si.findall('t').forEach(tmp => {
 				t.text += tmp.text;
 			});
 
-			si.findall('r/t').forEach(function (tmp) {
+			si.findall('r/t').forEach(tmp => {
 				t.text += tmp.text;
 			});
 
@@ -517,8 +517,8 @@ class Workbook {
 
         root.delSlice(0, children.length);
 
-        self.sharedStrings.forEach(function (string) {
-            var si = new etree.Element("si"), t = new etree.Element("t");
+        self.sharedStrings.forEach(string => {
+            var si = new etree.Element('si'), t = new etree.Element('t');
 
             t.text = string;
             si.append(t);
@@ -576,7 +576,7 @@ class Workbook {
     loadSheets(prefix, workbook, workbookRels) {
         var sheets = [];
 
-        workbook.findall("sheets/sheet").forEach(function (sheet) {
+        workbook.findall("sheets/sheet").forEach(sheet => {
             var sheetId = sheet.attrib.sheetId, relId = sheet.attrib['r:id'], relationship = workbookRels.find("Relationship[@Id='" + relId + "']"), filename = prefix + "/" + relationship.attrib.Target;
 
             sheets.push({
@@ -710,7 +710,7 @@ class Workbook {
     moveAllImages(drawing, fromRow, nbRow) {
         var self = this;
 
-        drawing.root.getchildren().forEach(function (drawElement) {
+        drawing.root.getchildren().forEach(drawElement => {
             if (drawElement.tag == "xdr:twoCellAnchor") {
                 self._moveTwoCellAnchor(drawElement, fromRow, nbRow);
             }
@@ -722,7 +722,7 @@ class Workbook {
     _moveTwoCellAnchor(drawingElement, fromRow, nbRow) {
         var self = this;
 
-        var _moveImage = function (drawingElement, fromRow, nbRow) {
+        var _moveImage = (drawingElement, fromRow, nbRow) => {
             var from = Number.parseInt(drawingElement.find('xdr:from').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
             drawingElement.find('xdr:from').find('xdr:row').text = from;
             var to = Number.parseInt(drawingElement.find('xdr:to').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
@@ -791,14 +791,14 @@ class Workbook {
             return;
         }
         const relationships = rels.root._children;
-        relationships.forEach(function (relationship) {
+        relationships.forEach(relationship => {
             if (relationship.attrib.Type === HYPERLINK_RELATIONSHIP) {
 
                 let target = relationship.attrib.Target;
 
                 //Double-decode due to excel double encoding url placeholders
                 target = decodeURI(decodeURI(target));
-                self.extractPlaceholders(target).forEach(function (placeholder) {
+                self.extractPlaceholders(target).forEach(placeholder => {
                     const substitution = substitutions[placeholder.name];
 
                     if (substitution === undefined) {
@@ -817,25 +817,25 @@ class Workbook {
     substituteTableColumnHeaders(tables, substitutions) {
         var self = this;
 
-        tables.forEach(function (table) {
+        tables.forEach(table => {
             var root = table.root, columns = root.find("tableColumns"), autoFilter = root.find("autoFilter"), tableRange = self.splitRange(root.attrib.ref), idx = 0, inserted = 0, newColumns = [];
 
-            columns.findall("tableColumn").forEach(function (col) {
+            columns.findall("tableColumn").forEach(col => {
                 ++idx;
                 col.attrib.id = Number(idx).toString();
                 newColumns.push(col);
 
                 var name = col.attrib.name;
 
-                self.extractPlaceholders(name).forEach(function (placeholder) {
+                self.extractPlaceholders(name).forEach(placeholder => {
                     var substitution = substitutions[placeholder.name];
                     if (substitution === undefined) {
                         return;
                     }
 
                     // Array -> new columns
-                    if (placeholder.full && placeholder.type === "normal" && substitution instanceof Array) {
-                        substitution.forEach(function (element, i) {
+                    if (placeholder.full && placeholder.type === 'normal' && substitution instanceof Array) {
+                        substitution.forEach((element, i) => {
                             var newCol = col;
                             if (i > 0) {
                                 newCol = self.cloneElement(newCol);
@@ -1077,7 +1077,7 @@ class Workbook {
             currentCell = cell.attrib.r;
 
         // add a cell for each element in the list
-        substitution.forEach(function (element) {
+        substitution.forEach(element => {
             ++newCellsInserted;
 
             if (newCellsInserted > 0) {
@@ -1110,12 +1110,12 @@ class Workbook {
             self.replaceChildren(cell, []);
         } else {
 
-            var parentTables = namedTables.filter(function (namedTable) {
+            var parentTables = namedTables.filter(namedTable => {
                 var range = self.splitRange(namedTable.root.attrib.ref);
                 return self.isWithin(cell.attrib.r, range.start, range.end);
             });
 
-            substitution.forEach(function (element, idx) {
+            substitution.forEach((element, idx) => {
                 var newRow, newCell, newCellsInsertedOnNewRow = 0, newCells = [], value = _get(element, key, '');
 
                 if (idx === 0) { // insert in the row where the placeholders are
@@ -1150,7 +1150,7 @@ class Workbook {
                         newCellsInsertedOnNewRow = self.substituteArray(newCells, newCell, value);
 
                         // Add each of the new cells created by substituteArray()
-                        newCells.forEach(function (newCell) {
+                        newCells.forEach(newCell => {
                             newRow.append(newCell);
                         });
 
@@ -1186,7 +1186,7 @@ class Workbook {
                     }
 
                     // expand named table range if necessary
-                    parentTables.forEach(function (namedTable) {
+                    parentTables.forEach(namedTable => {
                         var tableRoot = namedTable.root, autoFilter = tableRoot.find("autoFilter"), range = self.splitRange(tableRoot.attrib.ref);
 
                         if (!self.isWithin(newCell.attrib.r, range.start, range.end)) {
@@ -1239,7 +1239,7 @@ class Workbook {
         try {
             substitution = self.imageToBuffer(substitution);
         } catch (error) {
-            if (self.option && self.option.handleImageError && typeof self.option.handleImageError === "function") {
+            if (self.option && self.option.handleImageError && typeof self.option.handleImageError === 'function') {
                 self.option.handleImageError(substitution, error);
             } else {
                 throw error;
@@ -1370,7 +1370,10 @@ class Workbook {
     // Adjust the row `spans` attribute by `cellsInserted`
     updateRowSpan(row, cellsInserted) {
         if (cellsInserted !== 0 && row.attrib.spans) {
-            var rowSpan = row.attrib.spans.split(':').map(function (f) { return parseInt(f, 10); });
+            var rowSpan = row.attrib.spans.split(':').map(f => { 
+                return parseInt(f, 10); 
+            });
+
             rowSpan[1] += cellsInserted;
             row.attrib.spans = rowSpan.join(":");
         }
@@ -1396,7 +1399,7 @@ class Workbook {
         var cellRef = self.splitRef(currentCell), currentRow = cellRef.row, currentCol = self.charToNum(cellRef.col);
 
         // Update merged cells on the same row, at a higher column
-        sheet.findall('mergeCells/mergeCell').forEach(function (mergeCell) {
+        sheet.findall('mergeCells/mergeCell').forEach(mergeCell => {
             var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStart = self.splitRef(mergeRange.start), mergeStartCol = self.charToNum(mergeStart.col), mergeEnd = self.splitRef(mergeRange.end), mergeEndCol = self.charToNum(mergeEnd.col);
 
             if (mergeStart.row === currentRow && currentCol < mergeStartCol) {
@@ -1479,7 +1482,7 @@ class Workbook {
         });
 
         // Update named tables below this row
-        tables.forEach(function (table) {
+        tables.forEach(table => {
             var tableRoot = table.root, tableRange = self.splitRange(tableRoot.attrib.ref), tableStart = self.splitRef(tableRange.start), tableEnd = self.splitRef(tableRange.end);
 
 
@@ -1501,7 +1504,7 @@ class Workbook {
         });
 
         // Named cells/ranges
-        workbook.findall('definedNames/definedName').forEach(function (name) {
+        workbook.findall('definedNames/definedName').forEach(name => {
             var ref = name.text;
             if (self.isRange(ref)) {
                 var namedRange = self.splitRange(ref), //TODO : I think is there a bug, the ref is equal to [sheetName]![startRange]:[endRange]
@@ -1551,7 +1554,7 @@ class Workbook {
 
         var finalWidth = defaultWidth;
 
-        sheet.root.findall("cols/col").forEach(function (col) {
+        sheet.root.findall("cols/col").forEach(col => {
             if (numCol >= col.attrib["min"] && numCol <= col.attrib["max"]) {
                 if (col.attrib["width"] != undefined) {
                     finalWidth = col.attrib["width"];
@@ -1754,7 +1757,7 @@ class Workbook {
             var match = idRegex.exec(element.attrib[attr]);
             
             if (match == null) {
-                throw new Error("Can not find the id!");
+                throw new Error('Can not find the id!');
             }
 
             var cid = parseInt(match[1]);

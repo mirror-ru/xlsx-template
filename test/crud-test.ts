@@ -1,5 +1,4 @@
 /*jshint globalstrict:true, devel:true */
-/*eslint no-var:0 */
 /*tslint:disable:comment-format*/
 /*tslint:disable:typedef*/
 /*tslint:disable:max-line-length*/
@@ -804,7 +803,7 @@ describe('CRUD operations', () => {
 
 			const buffer_modify = await template.build();
 
-			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 
 			expect(sheet1).toBeDefined();
 
