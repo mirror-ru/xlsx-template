@@ -84,7 +84,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -190,7 +190,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -390,7 +390,6 @@ describe('CRUD operations', () => {
 				].find('t').text
 			).toEqual('Developer');
 
-
 			expect(sheet1.find("./sheetData/row/c[@r='D7']/v").text).toEqual('8');
 			expect(sheet1.find("./sheetData/row/c[@r='E7']/v").text).toEqual('8');
 			expect(sheet1.find("./sheetData/row/c[@r='F7']/v").text).toEqual('4');
@@ -536,6 +535,7 @@ describe('CRUD operations', () => {
 					parseInt(sheet1.find("./sheetData/row/c[@r='E8']/v").text, 10)
 				].find('t').text
 			).toEqual('Bob');
+
 			expect(sheet1.find("./sheetData/row/c[@r='F8']/v").text).toEqual('110');
 
 			expect(sheet1.find("./sheetData/row/c[@r='G8']")).toBeNull();
@@ -549,6 +549,7 @@ describe('CRUD operations', () => {
 					parseInt(sheet1.find("./sheetData/row/c[@r='E9']/v").text, 10)
 				].find('t').text
 			).toEqual('Jim');
+
 			expect(sheet1.find("./sheetData/row/c[@r='F9']/v").text).toEqual("120");
 
 			expect(sheet1.find("./sheetData/row/c[@r='G8']")).toBeNull();
@@ -564,6 +565,7 @@ describe('CRUD operations', () => {
 					parseInt(sheet1.find("./sheetData/row/c[@r='B15']/v").text, 10)
 				].find('t').text
 			).toEqual('John');
+
 			expect(sheet1.find("./sheetData/row/c[@r='C15']/v").text).toEqual('41275');
 			expect(sheet1.find("./sheetData/row/c[@r='D15']/v").text).toEqual('41276');
 			expect(sheet1.find("./sheetData/row/c[@r='E15']/v").text).toEqual('104');
@@ -574,6 +576,7 @@ describe('CRUD operations', () => {
 					parseInt(sheet1.find("./sheetData/row/c[@r='B16']/v").text, 10)
 				].find('t').text
 			).toEqual('Bob');
+
 			expect(sheet1.find("./sheetData/row/c[@r='C16']/v").text).toEqual('41275');
 			expect(sheet1.find("./sheetData/row/c[@r='D16']/v").text).toEqual('41276');
 			expect(sheet1.find("./sheetData/row/c[@r='E16']/v").text).toEqual('41277');
@@ -750,6 +753,7 @@ describe('CRUD operations', () => {
 			const buffer_modify = await template.build();
 
 			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
+
 			expect(sheet1).toBeDefined();
 
 			//fs.writeFileSync('test/output/test7.xlsx', buffer_modify);      
@@ -769,7 +773,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -798,9 +802,8 @@ describe('CRUD operations', () => {
 				] 
 			});
 
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
-			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 
 			expect(sheet1).toBeDefined();
@@ -852,9 +855,8 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
-			// let sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
 			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 
 			// Dimensions should be updated
@@ -886,7 +888,7 @@ describe('CRUD operations', () => {
 				});
 			}
 		
-			let buffer_modify = await template.build();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
