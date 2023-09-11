@@ -7,10 +7,10 @@
 
 'use strict';
 
-let XlsxTemplate = require('../build');
-let fs           = require('fs');
-let path         = require('path');
-let etree        = require('elementtree');
+const XlsxTemplate = require('../build');
+const fs           = require('fs');
+const path         = require('path');
+const etree        = require('elementtree');
 
 function getSharedString(sharedStrings, sheet1, index) {
 	return sharedStrings.findall('./si')[ parseInt(sheet1.find("./sheetData/row/c[@r='" + index + "']/v").text, 10) ].find('t').text;
@@ -52,7 +52,7 @@ describe('CRUD operations', () => {
 			expect(text).toMatch('<si><t>The plan</t></si>');
 		});
 
-		it('can substitute values and generate a file', done =>  {
+		it('can substitute values and build a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't1.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -85,7 +85,7 @@ describe('CRUD operations', () => {
 					]
 				});
 
-				var newData = await t.generate();
+				var newData = await t.build();
 
 				var sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
 					sheet1        = etree.parse(await t.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -167,7 +167,7 @@ describe('CRUD operations', () => {
 			});
 		});
 
-		it('can substitute values with descendant properties and generate a file', done =>  {
+		it('can substitute values with descendant properties and build a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't2.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -196,7 +196,7 @@ describe('CRUD operations', () => {
 					]
 				});
 
-				var newData = await t.generate();
+				var newData = await t.build();
 
 				var sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
 					sheet1        = etree.parse(await t.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -278,7 +278,7 @@ describe('CRUD operations', () => {
 
 		});
 		
-		it('can substitute values when single item array contains an object and generate a file', async () =>  {
+		it('can substitute values when single item array contains an object and build a file', async () =>  {
 			const template = new XlsxTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't3.xlsx');
@@ -298,7 +298,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let	sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -335,7 +335,7 @@ describe('CRUD operations', () => {
 			fs.writeFileSync('test/output/test6.xlsx', buffer_modify);
 		});
 		
-		it('can substitute values when single item array contains an object with sub array containing primatives and generate a file', done =>  {
+		it('can substitute values when single item array contains an object with sub array containing primatives and build a file', done =>  {
 
 			fs.readFile(path.join(__dirname, 'templates', 't2.xlsx'), async function(err, data) {
 				expect(err).toBeNull();
@@ -356,7 +356,7 @@ describe('CRUD operations', () => {
 					]
 				});
 
-				var newData = await t.generate();
+				var newData = await t.build();
 				
 				var sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
 					sheet1        = etree.parse(await t.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -421,7 +421,7 @@ describe('CRUD operations', () => {
 				singleCols: [ 10 ]
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let	sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -474,7 +474,7 @@ describe('CRUD operations', () => {
 					]
 				});
 
-				var newData = await t.generate();
+				var newData = await t.build();
 
 				let sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 				let	sheet1        = etree.parse(await t.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -612,7 +612,7 @@ describe('CRUD operations', () => {
 				domain: 'google'
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let	sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -659,7 +659,7 @@ describe('CRUD operations', () => {
 				progress: 100
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sheet1   = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 			let	workbook = etree.parse(await template.archive.file('xl/workbook.xml').async('string')).getroot();
@@ -728,7 +728,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 
@@ -756,7 +756,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			const buffer_modify = await template.generate();
+			const buffer_modify = await template.build();
 
 			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
 			expect(sheet1).toBeDefined();
@@ -778,7 +778,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.generate();
+			let buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -807,7 +807,7 @@ describe('CRUD operations', () => {
 				] 
 			});
 
-			let buffer_modify = await template.generate();
+			let buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -861,7 +861,7 @@ describe('CRUD operations', () => {
 				]
 			});
 
-			let buffer_modify = await template.generate();
+			let buffer_modify = await template.build();
 
 			// let sharedStrings = etree.parse(await t.archive.file('xl/sharedStrings.xml').async('string')).getroot(),
 			let sheet1 = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();
@@ -895,7 +895,7 @@ describe('CRUD operations', () => {
 				});
 			}
 		
-			let buffer_modify = await template.generate();
+			let buffer_modify = await template.build();
 
 			let sharedStrings = etree.parse(await template.archive.file('xl/sharedStrings.xml').async('string')).getroot();
 			let sheet1        = etree.parse(await template.archive.file('xl/worksheets/sheet1.xml').async('string')).getroot();

@@ -464,9 +464,9 @@ class Workbook {
         self.writeDrawing(drawing);
     }
     /**
-     * Generate a new binary .xlsx file
+     * Build a new binary .xlsx file
      */
-    async generate(options) {
+    async build(options) {
         var self = this;
 
         if (!options) {

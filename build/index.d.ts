@@ -63,9 +63,9 @@ declare class Workbook {
      */
     substitute(sheetName: any, substitutions: any): Promise<void>;
     /**
-     * Generate a new binary .xlsx file
+     * Build a new binary .xlsx file
      */
-    generate(options: any): Promise<string | number[] | ArrayBuffer | Uint8Array | Blob | Buffer>;
+    build(options: any): Promise<string | number[] | ArrayBuffer | Uint8Array | Blob | Buffer>;
     writeSharedStrings(): Promise<void>;
     addSharedString(s: any): number;
     stringIndex(s: any): any;
