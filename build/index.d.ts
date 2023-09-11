@@ -103,7 +103,7 @@ declare class Workbook {
     writeTables(tables: any): void;
     substituteHyperlinks(rels: any, substitutions: any): Promise<void>;
     substituteTableColumnHeaders(tables: any, substitutions: any): void;
-    extractPlaceholders(string: any): {
+    extractPlaceholders(text: any): {
         placeholder: string;
         type: string;
         name: string;

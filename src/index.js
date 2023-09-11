@@ -278,7 +278,14 @@ class Workbook {
         var sheet = await self.loadSheet(sheetName);
         self.sheet = sheet;
 
-        var dimension = sheet.root.find('dimension'), sheetData = sheet.root.find('sheetData'), currentRow = null, totalRowsInserted = 0, totalColumnsInserted = 0, namedTables = await self.loadTables(sheet.root, sheet.filename), rows = [], drawing = null;
+        var dimension = sheet.root.find('dimension');
+        var sheetData = sheet.root.find('sheetData');
+        var currentRow = null;
+        var totalRowsInserted = 0;
+        var totalColumnsInserted = 0;
+        var namedTables = await self.loadTables(sheet.root, sheet.filename);
+        var rows = [];
+        var drawing = null;
 
         var rels = await self.loadSheetRels(sheet.filename);
 
@@ -307,7 +314,7 @@ class Workbook {
                         // Only substitute things for which we have a substitution
                         var substitution = _get(substitutions, placeholder.name, ''), newCellsInserted = 0;
 						
-                        if (placeholder.full && placeholder.type === 'table' && substitution instanceof Array) {
+                        if (placeholder.full && placeholder.type === 'table' && Array.isArray(substitution)) {
                             if (placeholder.subType === 'image' && drawing == null) {
                                 if (rels) {
                                     drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
@@ -316,8 +323,8 @@ class Workbook {
                                 }
                             }
 
-                            cellsForsubstituteTable.push(cell); // When substitute table, push (all) the cell
-
+                            cellsForsubstituteTable.push(cell); // When substitute table, push (all) the cell 
+                            
                             newCellsInserted = self.substituteTable(
                                 row, newTableRows,
                                 cells, cell,
@@ -331,7 +338,7 @@ class Workbook {
                                 if (substitution.length === 1)
                                     appendCell = true;
                                 
-                                if (substitution[0][placeholder.key] instanceof Array)
+                                if (Array.isArray(substitution[0][placeholder.key]))
                                     appendCell = false;
                             }
 
@@ -340,12 +347,10 @@ class Workbook {
                                 cellsInserted += newCellsInserted;
                                 self.pushRight(self.workbook, sheet.root, cell.attrib.r, newCellsInserted);
                             }
-                        } else if (placeholder.full && placeholder.type === 'normal' && substitution instanceof Array) {
+                        } else if (placeholder.full && placeholder.type === 'normal' && Array.isArray(substitution)) {
                             appendCell = false; // don't double-insert cells
 
-                            newCellsInserted = self.substituteArray(
-                                cells, cell, substitution
-                            );
+                            newCellsInserted = self.substituteArray(cells, cell, substitution);
 
                             if (newCellsInserted !== 0) {
                                 cellsInserted += newCellsInserted;
@@ -353,9 +358,9 @@ class Workbook {
                             }
                         } else if (placeholder.full && placeholder.type === 'image') {
                             if (rels != null) {
-                                if (drawing == null) {
+                                if (drawing == null)
                                     drawing = self.loadDrawing(sheet.root, sheet.filename, rels.root);
-                                }
+                                
                                 string = self.substituteImage(cell, string, placeholder, substitution, drawing);
                             } else {
                                 console.log('Need to implement initRels. Or init this with Excel');
@@ -818,32 +823,38 @@ class Workbook {
         var self = this;
 
         tables.forEach(table => {
-            var root = table.root, columns = root.find("tableColumns"), autoFilter = root.find("autoFilter"), tableRange = self.splitRange(root.attrib.ref), idx = 0, inserted = 0, newColumns = [];
+            var root = table.root, columns = root.find('tableColumns'), autoFilter = root.find('autoFilter'), tableRange = self.splitRange(root.attrib.ref), idx = 0, inserted = 0, newColumns = [];
 
-            columns.findall("tableColumn").forEach(col => {
+            columns.findall('tableColumn').forEach(col => {
                 ++idx;
                 col.attrib.id = Number(idx).toString();
+                
                 newColumns.push(col);
 
                 var name = col.attrib.name;
 
                 self.extractPlaceholders(name).forEach(placeholder => {
                     var substitution = substitutions[placeholder.name];
-                    if (substitution === undefined) {
+
+                    if (substitution === undefined)
                         return;
-                    }
 
                     // Array -> new columns
-                    if (placeholder.full && placeholder.type === 'normal' && substitution instanceof Array) {
+                    if (placeholder.full && placeholder.type === 'normal' && Array.isArray(substitution)) {
                         substitution.forEach((element, i) => {
                             var newCol = col;
+
                             if (i > 0) {
                                 newCol = self.cloneElement(newCol);
                                 newCol.attrib.id = Number(++idx).toString();
+
                                 newColumns.push(newCol);
+
                                 ++inserted;
+
                                 tableRange.end = self.nextCol(tableRange.end);
                             }
+
                             newCol.attrib.name = self.stringify(element);
                         });
                         // Normal placeholder
@@ -895,20 +906,19 @@ class Workbook {
     // delineators), `name` (the name part of the token), `key` (the object key
     // for `table` tokens), `full` (boolean indicating whether this placeholder
     // is the entirety of the string) and `type` (one of `table` or `cell`)
-    extractPlaceholders(string) {
-        // Yes, that's right. It's a bunch of brackets and question marks and stuff.
-        var re = /\${(?:(.+?):)?([^{}]+?)(?:\.(.+?))?(?::(.+?))??}/g;
+    extractPlaceholders(text) {
+        const re = /\${(?:(.+?):)?([^{}]+?)(?:\.(.+?))?(?::(.+?))??}/g;
 
-        var match = null, matches = [];
+        let match = null, matches = [];
 
-        while ((match = re.exec(string)) !== null) {
+        while ((match = re.exec(text)) !== null) {
             matches.push({
                 placeholder: match[0],
                 type: match[1] || 'normal',
                 name: match[2],
                 key: match[3],
                 subType: match[4],
-                full: match[0].length === string.length
+                full: match[0].length === text.length
             });
         }
 
@@ -1031,25 +1041,25 @@ class Workbook {
     insertCellValue(cell, substitution) {
         var self = this;
 
-        var cellValue = cell.find("v"), stringified = self.stringify(substitution);
+        var cellValue = cell.find('v'), stringified = self.stringify(substitution);
 
         if (typeof substitution === 'string' && substitution[0] === '=') {
             //substitution, started with '=' is a formula substitution
-            var formula = new etree.Element("f");
+            var formula = new etree.Element('f');
             formula.text = substitution.substr(1);
             cell.insert(1, formula);
             delete cell.attrib.t; //cellValue will be deleted later
             return formula.text;
         }
 
-        if (typeof (substitution) === "number" || substitution instanceof Date) {
+        if (typeof (substitution) === 'number' || substitution instanceof Date) {
             delete cell.attrib.t;
             cellValue.text = stringified;
-        } else if (typeof (substitution) === "boolean") {
-            cell.attrib.t = "b";
+        } else if (typeof (substitution) === 'boolean') {
+            cell.attrib.t = 'b';
             cellValue.text = stringified;
         } else {
-            cell.attrib.t = "s";
+            cell.attrib.t = 's';
             cellValue.text = Number(self.stringIndex(stringified)).toString();
         }
 
@@ -1120,7 +1130,7 @@ class Workbook {
 
                 if (idx === 0) { // insert in the row where the placeholders are
 
-                    if (value instanceof Array) {
+                    if (Array.isArray(value)) {
                         newCellsInserted = self.substituteArray(cells, cell, value);
                     } else if (placeholder.subType == 'image' && value != "") {
                         self.substituteImage(cell, placeholder.placeholder, placeholder, value, drawing);
@@ -1146,7 +1156,7 @@ class Workbook {
                         col: self.splitRef(newCell.attrib.r).col
                     });
 
-                    if (value instanceof Array) {
+                    if (Array.isArray(value)) {
                         newCellsInsertedOnNewRow = self.substituteArray(newCells, newCell, value);
 
                         // Add each of the new cells created by substituteArray()
@@ -1343,6 +1353,7 @@ class Workbook {
     // Replace all children of `parent` with the nodes in the list `children`
     replaceChildren(parent, children) {
         parent.delSlice(0, parent.len());
+
         children.forEach(child => {
             parent.append(child);
         });
