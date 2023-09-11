@@ -28,9 +28,7 @@ await template.substitute(1, {
 	]
 });
 
-let buffer_modify = template.build();
-
-fs.writeFileSync('./output.xlsx', buffer_modify);
+fs.writeFileSync('./output.xlsx', await template.build());
 ```
 
 ### Scalars
