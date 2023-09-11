@@ -8,16 +8,17 @@ var path = require('path'),
     etree = require('elementtree'),
     JSZip = require('jszip');
 
-var DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
-    CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
-    SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
-    HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+const DOCUMENT_RELATIONSHIP       = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument';
+const CALC_CHAIN_RELATIONSHIP     = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain';
+const SHARED_STRINGS_RELATIONSHIP = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings';
+const HYPERLINK_RELATIONSHIP      = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink';
 
 var _get_simple = function (obj, desc) {
-    if (desc.indexOf("[") >=0 ) {
+    if (desc.indexOf('[') >= 0) {
         var specification = desc.split(/[[[\]]/);
         var property = specification[0];
         var index = specification[1];
+
         return obj[property][index];
     }
 
@@ -71,6 +72,7 @@ class Workbook {
         this.calChainRel = null;
         this.calcChainPath = "";
     }
+
     /**
      * Delete unused sheets if needed
      */
@@ -79,14 +81,16 @@ class Workbook {
         var sheet = await self.loadSheet(sheetName);
 
         var sh = self.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
-        self.workbook.find("sheets").remove(sh);
+        self.workbook.find('sheets').remove(sh);
 
         var rel = self.workbookRels.find("Relationship[@Id='" + sh.attrib['r:id'] + "']");
         self.workbookRels.remove(rel);
 
         self._rebuild();
+
         return self;
     }
+
     /**
      * Clone sheets in current workbook template
      */
@@ -96,34 +100,43 @@ class Workbook {
         var newSheetIndex = (self.workbook.findall("sheets/sheet").length + 1).toString();
         var fileName = 'worksheets' + '/' + 'sheet' + newSheetIndex + '.xml';
         var arcName = self.prefix + '/' + fileName;
+
         // Copy sheet file
         self.archive.file(arcName, etree.tostring(sheet.root));
+
         // copy sheet name in workbook
         var newSheet = etree.SubElement(self.workbook.find('sheets'), 'sheet');
+
         newSheet.attrib.name = copyName || 'Sheet' + newSheetIndex;
         newSheet.attrib.sheetId = newSheetIndex;
         newSheet.attrib['r:id'] = 'rId' + newSheetIndex;
+
         // Copy definedName if any
         self.workbook.findall('definedNames/definedName').forEach(element => {
             if (element.text && element.text.split("!").length && element.text.split("!")[0] == sheetName) {
                 var newDefinedName = etree.SubElement(self.workbook.find('definedNames'), 'definedName', element.attrib);
+
                 newDefinedName.text = `${copyName}!${element.text.split("!")[1]}`;
                 newDefinedName.attrib.localSheetId = newSheetIndex - 1;
             }
         });
 
         var newRel = etree.SubElement(self.workbookRels, 'Relationship');
+
         newRel.attrib.Type = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
         newRel.attrib.Target = fileName;
 
         //Copy rels sheet - TODO : Maybe we can copy also the 'Target' files in rels, but Excel make this automaticly
         var relFileName = 'worksheets' + '/_rels/' + 'sheet' + newSheetIndex + '.xml.rels';
         var relArcName = self.prefix + '/' + relFileName;
+
         self.archive.file(relArcName, etree.tostring((await self.loadSheetRels(sheet.filename)).root));
 
         self._rebuild();
+
         return self;
     }
+
     /**
      *  Partially rebuild after copy/delete sheets
      */
@@ -134,23 +147,28 @@ class Workbook {
         var order = ['worksheet', 'theme', 'styles', 'sharedStrings'];
 
         self.workbookRels.findall("*")
-            .sort(function (rel1, rel2) {
+            .sort((rel1, rel2) => {
                 var index1 = order.indexOf(path.basename(rel1.attrib.Type));
                 var index2 = order.indexOf(path.basename(rel2.attrib.Type));
+
                 // If the attrib.Type is not in the order list, go to the end of sort
                 // Maybe we can do it more gracefully with the boolean operator
                 if (index1 < 0 && index2 >= 0)
                     return 1; // rel1 go after rel2
+
                 if (index1 >= 0 && index2 < 0)
                     return -1; // rel1 go before rel2
+
                 if (index1 < 0 && index2 < 0)
                     return 0; // change nothing
 
                 if ((index1 + index2) == 0) {
                     if (rel1.attrib.Id && rel2.attrib.Id)
                         return rel1.attrib.Id.substring(3) - rel2.attrib.Id.substring(3);
+
                     return rel1._id - rel2._id;
                 }
+
                 return index1 - index2;
             })
             .forEach(function (item, index) {
@@ -166,6 +184,7 @@ class Workbook {
         self.archive.file(self.workbookPath, etree.tostring(self.workbook));
         self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
     }
+
     /**
      * Load a .xlsx file from filename
      */
@@ -176,16 +195,16 @@ class Workbook {
 
 		await self.loadTemplate(buffer);
 	}
+
     /**
      * Load a .xlsx file from a byte array.
      */
     async loadTemplate(data) {
         var self = this;
 
-        if (Buffer.isBuffer(data)) {
+        if (Buffer.isBuffer(data))
             data = data.toString('binary');
-        }
-
+        
 		self.archive = await JSZip.loadAsync(data, { base64: false, checkCRC32: true });
 
 		// Load relationships
@@ -201,32 +220,40 @@ class Workbook {
 		self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
 		self.calChainRel = self.workbookRels.find("Relationship[@Type='" + CALC_CHAIN_RELATIONSHIP + "']");
 
-		if (self.calChainRel) {
+		if (self.calChainRel)
 			self.calcChainPath = self.prefix + "/" + self.calChainRel.attrib.Target;
-		}
 
 		self.sharedStringsPath = self.prefix + "/" + self.workbookRels.find("Relationship[@Type='" + SHARED_STRINGS_RELATIONSHIP + "']").attrib.Target;
 		self.sharedStrings = [];
+
 		let parseTextSharedStr = await self.archive.file(self.sharedStringsPath).async('string');
-		etree.parse(parseTextSharedStr).getroot().findall('si').forEach(function (si) {
+
+		etree.parse(parseTextSharedStr).getroot().findall('si').forEach(si => {
 			var t = { text: '' };
+
 			si.findall('t').forEach(function (tmp) {
 				t.text += tmp.text;
 			});
+
 			si.findall('r/t').forEach(function (tmp) {
 				t.text += tmp.text;
 			});
+
 			self.sharedStrings.push(t.text);
 			self.sharedStringsLookup[t.text] = self.sharedStrings.length - 1;
 		});
 
 		let parseTextContentTypes = await self.archive.file('[Content_Types].xml').async('string');
+
 		self.contentTypes = etree.parse(parseTextContentTypes).getroot();
+
 		var jpgType = self.contentTypes.find('Default[@Extension="jpg"]');
+
 		if (jpgType === null) {
 			etree.SubElement(self.contentTypes, 'Default', { 'ContentType': 'image/png', 'Extension': 'jpg' });
 		}
     }
+
     /**
      * Interpolate values for all the sheets using the given substitutions
      * (an object).
@@ -240,6 +267,7 @@ class Workbook {
             await self.substitute(sheet.id, substitutions);
         }
     }
+
     /**
      * Interpolate values for the sheet with the given number (1-based) or
      * name (if a string) using the given substitutions (an object).
@@ -463,6 +491,7 @@ class Workbook {
         self.writeTables(namedTables);
         self.writeDrawing(drawing);
     }
+
     /**
      * Build a new binary .xlsx file
      */
@@ -477,6 +506,7 @@ class Workbook {
 
 		return await self.archive.generateAsync(options);
     }
+
     // Helpers
     // Write back the new shared strings list
     async writeSharedStrings() {
@@ -500,6 +530,7 @@ class Workbook {
 
         self.archive.file(self.sharedStringsPath, etree.tostring(root));
     }
+    
     // Add a new shared string
     addSharedString(s) {
         var self = this;
@@ -510,16 +541,20 @@ class Workbook {
 
         return idx;
     }
+
     // Get the number of a shared string, adding a new one if necessary.
     stringIndex(s) {
         var self = this;
 
         var idx = self.sharedStringsLookup[s];
+
         if (idx === undefined) {
             idx = self.addSharedString(s);
         }
+
         return idx;
     }
+
     // Replace a shared string with a new one at the same index. Return the
     // index.
     replaceString(oldString, newString) {
@@ -536,6 +571,7 @@ class Workbook {
 
         return idx;
     }
+
     // Get a list of sheet ids, names and filenames
     loadSheets(prefix, workbook, workbookRels) {
         var sheets = [];
@@ -552,6 +588,7 @@ class Workbook {
 
         return sheets;
     }
+
     // Get sheet a sheet, including filename and name
     async loadSheet(sheet) {
         var self = this;
@@ -583,17 +620,24 @@ class Workbook {
             root: etree.parse(parseTextFileName).getroot()
         };
     }
+
     //Load rels for a sheetName
     async loadSheetRels(sheetFilename) {
         var self = this;
+        
         var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = path.join(sheetDirectory, '_rels', sheetName + '.rels').replace(/\\/g, '/'), relsFile = self.archive.file(relsFilename);
+        
         if (relsFile === null) {
             return self.initSheetRels(sheetFilename);
         }
+
 		let parseTextRels = await relsFile.async('string');
+
         var rels = { filename: relsFilename, root: etree.parse(parseTextRels).getroot() };
+
         return rels;
     }
+
     initSheetRels(sheetFilename) {
         var sheetDirectory = path.dirname(sheetFilename), sheetName = path.basename(sheetFilename), relsFilename = path.join(sheetDirectory, '_rels', sheetName + '.rels').replace(/\\/g, '/');
         var element = etree.Element;
@@ -604,6 +648,7 @@ class Workbook {
         var rels = { filename: relsFilename, root: relsEtree.getroot() };
         return rels;
     }
+    
     // Load Drawing file
     async loadDrawing(sheet, sheetFilename, rels) {
         var self = this;
@@ -622,10 +667,13 @@ class Workbook {
         drawing.relRoot = etree.parse(parseTextRelFilename).getroot();
         return drawing;
     }
+
     addContentType(partName, contentType) {
         var self = this;
+
         etree.SubElement(self.contentTypes, 'Override', { 'ContentType': contentType, 'PartName': partName });
     }
+
     initDrawing(sheet, rels) {
         var self = this;
         var maxId = self.findMaxId(rels, 'Relationship', 'Id', /rId(\d*)/);
@@ -644,19 +692,24 @@ class Workbook {
         drawing.relRoot = etree.Element('Relationships');
         drawing.relRoot.set('xmlns', "http://schemas.openxmlformats.org/package/2006/relationships");
         self.addContentType('/' + drawing.filename, 'application/vnd.openxmlformats-officedocument.drawing+xml');
+
         return drawing;
     }
+
     // Write Drawing file
     writeDrawing(drawing) {
         var self = this;
+
         if (drawing !== null) {
             self.archive.file(drawing.filename, etree.tostring(drawing.root));
             self.archive.file(drawing.relFilename, etree.tostring(drawing.relRoot));
         }
     }
+
     // Move all images after fromRow of nbRow row
     moveAllImages(drawing, fromRow, nbRow) {
         var self = this;
+
         drawing.root.getchildren().forEach(function (drawElement) {
             if (drawElement.tag == "xdr:twoCellAnchor") {
                 self._moveTwoCellAnchor(drawElement, fromRow, nbRow);
@@ -664,15 +717,18 @@ class Workbook {
             // TODO : make the other tags image
         });
     }
+
     // Move TwoCellAnchor tag images after fromRow of nbRow row
     _moveTwoCellAnchor(drawingElement, fromRow, nbRow) {
         var self = this;
+
         var _moveImage = function (drawingElement, fromRow, nbRow) {
             var from = Number.parseInt(drawingElement.find('xdr:from').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
             drawingElement.find('xdr:from').find('xdr:row').text = from;
             var to = Number.parseInt(drawingElement.find('xdr:to').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
             drawingElement.find('xdr:to').find('xdr:row').text = to;
         };
+
         if (self.option["moveSameLineImages"]) {
             if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 >= fromRow) {
                 _moveImage(drawingElement, fromRow, nbRow);
@@ -720,7 +776,7 @@ class Workbook {
     writeTables(tables) {
         var self = this;
 
-        tables.forEach(function (namedTable) {
+        tables.forEach(namedTable => {
             self.archive.file(namedTable.filename, etree.tostring(namedTable.root));
         });
     }
@@ -756,6 +812,7 @@ class Workbook {
             }
         });
     }
+
     // Perform substitution in table headers
     substituteTableColumnHeaders(tables, substitutions) {
         var self = this;
@@ -803,6 +860,7 @@ class Workbook {
             if (inserted > 0) {
                 columns.attrib.count = Number(idx).toString();
                 root.attrib.ref = self.joinRange(tableRange);
+
                 if (autoFilter !== null) {
                     // XXX: This is a simplification that may stomp on some configurations
                     autoFilter.attrib.ref = self.joinRange(tableRange);
@@ -813,7 +871,8 @@ class Workbook {
             var tableRoot = table.root, tableRange = self.splitRange(tableRoot.attrib.ref), tableStart = self.splitRef(tableRange.start), tableEnd = self.splitRef(tableRange.end);
 
             if (tableRoot.attrib.totalsRowCount) {
-                var autoFilter = tableRoot.find("autoFilter");
+                var autoFilter = tableRoot.find('autoFilter');
+
                 if (autoFilter !== null) {
                     autoFilter.attrib.ref = self.joinRange({
                         start: self.joinRef(tableStart),
@@ -830,6 +889,7 @@ class Workbook {
             }
         });
     }
+
     // Return a list of tokens that may exist in the string.
     // Keys are: `placeholder` (the full placeholder, including the `${}`
     // delineators), `name` (the name part of the token), `key` (the object key
@@ -840,6 +900,7 @@ class Workbook {
         var re = /\${(?:(.+?):)?([^{}]+?)(?:\.(.+?))?(?::(.+?))??}/g;
 
         var match = null, matches = [];
+
         while ((match = re.exec(string)) !== null) {
             matches.push({
                 placeholder: match[0],
@@ -853,6 +914,7 @@ class Workbook {
 
         return matches;
     }
+
     // Split a reference into an object with keys `row` and `col` and,
     // optionally, `table`, `rowAbsolute` and `colAbsolute`.
     splitRef(ref) {
@@ -865,6 +927,7 @@ class Workbook {
             row: parseInt(match && match[5], 10)
         };
     }
+
     // Join an object with keys `row` and `col` into a single reference string
     joinRef(ref) {
         return (ref.table ? ref.table + "!" : "") +
@@ -873,38 +936,47 @@ class Workbook {
             (ref.rowAbsolute ? "$" : "") +
             Number(ref.row).toString();
     }
+
     // Get the next column's cell reference given a reference like "B2".
     nextCol(ref) {
         var self = this;
+
         ref = ref.toUpperCase();
-        return ref.replace(/[A-Z]+/, function (match) {
+
+        return ref.replace(/[A-Z]+/, match => {
             return self.numToChar(self.charToNum(match) + 1);
         });
     }
+
     // Get the next row's cell reference given a reference like "B2".
     nextRow(ref) {
         ref = ref.toUpperCase();
-        return ref.replace(/[0-9]+/, function (match) {
+
+        return ref.replace(/[0-9]+/, match => {
             return (parseInt(match, 10) + 1).toString();
         });
     }
+
     // Turn a reference like "AA" into a number like 27
     charToNum(str) {
         var num = 0;
+
         for (var idx = str.length - 1, iteration = 0; idx >= 0; --idx, ++iteration) {
             var thisChar = str.charCodeAt(idx) - 64, // A -> 1; B -> 2; ... Z->26
                 multiplier = Math.pow(26, iteration);
             num += multiplier * thisChar;
         }
+
         return num;
     }
+
     // Turn a number like 27 into a reference like "AA"
     numToChar(num) {
         var str = "";
 
-
         for (var i = 0; num > 0; ++i) {
             var remainder = num % 26, charCode = remainder + 64;
+
             num = (num - remainder) / 26;
 
             // Compensate for the fact that we don't represent zero, e.g. A = 1, Z = 26, but AA = 27
@@ -918,10 +990,12 @@ class Workbook {
 
         return str;
     }
+
     // Is ref a range?
     isRange(ref) {
         return ref.indexOf(':') !== -1;
     }
+
     // Is ref inside the table defined by startRef and endRef?
     isWithin(ref, startRef, endRef) {
         var self = this;
@@ -936,8 +1010,8 @@ class Workbook {
             start.row <= target.row && target.row <= end.row &&
             start.col <= target.col && target.col <= end.col
         );
-
     }
+
     // Turn a value of any type into a string
     stringify(value) {
         if (value instanceof Date) {
@@ -952,6 +1026,7 @@ class Workbook {
 
         return "";
     }
+
     // Insert a substitution value into a cell (c tag)
     insertCellValue(cell, substitution) {
         var self = this;
@@ -980,6 +1055,7 @@ class Workbook {
 
         return stringified;
     }
+
     // Perform substitution of a single value
     substituteScalar(cell, string, placeholder, substitution) {
         var self = this;
@@ -991,8 +1067,8 @@ class Workbook {
             cell.attrib.t = "s";
             return self.insertCellValue(cell, newString);
         }
-
     }
+
     // Perform a columns substitution from an array
     substituteArray(cells, cell, substitution) {
         var self = this;
@@ -1017,13 +1093,16 @@ class Workbook {
 
         return newCellsInserted;
     }
+
     // Perform a table substitution. May update `newTableRows` and `cells` and change `cell`.
     // Returns total number of new cells inserted on the original row.
     substituteTable(row, newTableRows, cells, cell, namedTables, substitution, key, placeholder, drawing) {
         var self = this, newCellsInserted = 0; // on the original row
 
 		// Credit: kennycreeper - Fix merge cells style
-		//const mergeCell = self.sheet.root.findall('mergeCells/mergeCell').find(c => self.splitRange(c.attrib.ref).start === cell.attrib.r);
+		/*
+        const mergeCell = self.sheet.root.findall('mergeCells/mergeCell').find(c => self.splitRange(c.attrib.ref).start === cell.attrib.r);
+        */
 
         // if no elements, blank the cell, but don't delete it
         if (substitution.length === 0) {
@@ -1061,6 +1140,7 @@ class Workbook {
 
                     // Create a new cell
                     newCell = self.cloneElement(cell);
+
                     newCell.attrib.r = self.joinRef({
                         row: newRow.attrib.r,
                         col: self.splitRef(newCell.attrib.r).col
@@ -1112,6 +1192,7 @@ class Workbook {
                         if (!self.isWithin(newCell.attrib.r, range.start, range.end)) {
                             range.end = self.nextRow(range.end);
                             tableRoot.attrib.ref = self.joinRange(range);
+
                             if (autoFilter !== null) {
                                 // XXX: This is a simplification that may stomp on some configurations
                                 autoFilter.attrib.ref = tableRoot.attrib.ref;
@@ -1124,15 +1205,18 @@ class Workbook {
 
         return newCellsInserted;
     }
+
     substituteImage(cell, string, placeholder, substitution, drawing) {
         var self = this;
         var self = this;
         self.substituteScalar(cell, string, placeholder, '');
+
         if (substitution == null || substitution == "") {
             // TODO : @kant2002 if image is null or empty string in user substitution data, throw an error or not ?
             // If yes, remove this test.
             return true;
         }
+
         // get max refid
         // update rel file.
         var maxId = self.findMaxId(drawing.relRoot, 'Relationship', 'Id', /rId(\d*)/);
@@ -1142,6 +1226,7 @@ class Workbook {
         rel.set('Type', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/image');
 
         rel.set('Target', '../media/image' + maxFildId + '.jpg');
+
         function toArrayBuffer(buffer) {
             var ab = new ArrayBuffer(buffer.length);
             var view = new Uint8Array(ab);
@@ -1150,6 +1235,7 @@ class Workbook {
             }
             return ab;
         };
+
         try {
             substitution = self.imageToBuffer(substitution);
         } catch (error) {
@@ -1236,6 +1322,7 @@ class Workbook {
 
         return true;
     }
+
     // Clone an element. If `deep` is true, recursively clone children
     cloneElement(element, deep) {
         var self = this;
@@ -1245,25 +1332,28 @@ class Workbook {
         newElement.tail = element.tail;
 
         if (deep !== false) {
-            element.getchildren().forEach(function (child) {
+            element.getchildren().forEach(child => {
                 newElement.append(self.cloneElement(child, deep));
             });
         }
 
         return newElement;
     }
+
     // Replace all children of `parent` with the nodes in the list `children`
     replaceChildren(parent, children) {
         parent.delSlice(0, parent.len());
-        children.forEach(function (child) {
+        children.forEach(child => {
             parent.append(child);
         });
     }
+
     // Calculate the current row based on a source row and a number of new rows
     // that have been inserted above
     getCurrentRow(row, rowsInserted) {
         return parseInt(row.attrib.r, 10) + rowsInserted;
     }
+
     // Calculate the current cell based on asource cell, the current row index,
     // and a number of new cells that have been inserted so far
     getCurrentCell(cell, currentRow, cellsInserted) {
@@ -1276,6 +1366,7 @@ class Workbook {
             col: self.numToChar(colNum + cellsInserted)
         });
     }
+
     // Adjust the row `spans` attribute by `cellsInserted`
     updateRowSpan(row, cellsInserted) {
         if (cellsInserted !== 0 && row.attrib.spans) {
@@ -1284,18 +1375,19 @@ class Workbook {
             row.attrib.spans = rowSpan.join(":");
         }
     }
+
     // Split a range like "A1:B1" into {start: "A1", end: "B1"}
     splitRange(range) {
-        var split = range.split(":");
-        return {
-            start: split[0],
-            end: split[1]
-        };
+        var split = range.split(':');
+
+        return { start: split[0], end: split[1] };
     }
+
     // Join into a a range like "A1:B1" an object like {start: "A1", end: "B1"}
     joinRange(range) {
-        return range.start + ":" + range.end;
+        return range.start + ':' + range.end;
     }
+
     // Look for any merged cell or named range definitions to the right of
     // `currentCell` and push right by `numCols`.
     pushRight(workbook, sheet, currentCell, numCols) {
@@ -1304,7 +1396,7 @@ class Workbook {
         var cellRef = self.splitRef(currentCell), currentRow = cellRef.row, currentCol = self.charToNum(cellRef.col);
 
         // Update merged cells on the same row, at a higher column
-        sheet.findall("mergeCells/mergeCell").forEach(function (mergeCell) {
+        sheet.findall('mergeCells/mergeCell').forEach(function (mergeCell) {
             var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStart = self.splitRef(mergeRange.start), mergeStartCol = self.charToNum(mergeStart.col), mergeEnd = self.splitRef(mergeRange.end), mergeEndCol = self.charToNum(mergeEnd.col);
 
             if (mergeStart.row === currentRow && currentCol < mergeStartCol) {
@@ -1319,7 +1411,7 @@ class Workbook {
         });
 
         // Named cells/ranges
-        workbook.findall("definedNames/definedName").forEach(function (name) {
+        workbook.findall('definedNames/definedName').forEach(name => {
             var ref = name.text;
 
             if (self.isRange(ref)) {
@@ -1346,6 +1438,7 @@ class Workbook {
 
         });
     }
+
     // Look for any merged cell, named table or named range definitions below
     // `currentRow` and push down by `numRows` (used when rows are inserted).
     pushDown(workbook, sheet, tables, currentRow, numRows) {
@@ -1354,7 +1447,7 @@ class Workbook {
         var mergeCells = sheet.find('mergeCells');
 
         // Update merged cells below this row
-        sheet.findall('mergeCells/mergeCell').forEach(function (mergeCell) {
+        sheet.findall('mergeCells/mergeCell').forEach(mergeCell => {
             var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStart = self.splitRef(mergeRange.start), mergeEnd = self.splitRef(mergeRange.end);
 
             if (mergeStart.row > currentRow) {
@@ -1445,16 +1538,19 @@ class Workbook {
                     name.text = self.joinRef(namedRef);
                 }
             }
-
         });
     }
+
     getWidthCell(numCol, sheet) {
-        var defaultWidth = sheet.root.find("sheetFormatPr").attrib["defaultColWidth"];
+        var defaultWidth = sheet.root.find('sheetFormatPr').attrib['defaultColWidth'];
+
         if (!defaultWidth) {
             // TODO : Check why defaultColWidth is not set ? 
             defaultWidth = 11.42578125;
         }
+
         var finalWidth = defaultWidth;
+
         sheet.root.findall("cols/col").forEach(function (col) {
             if (numCol >= col.attrib["min"] && numCol <= col.attrib["max"]) {
                 if (col.attrib["width"] != undefined) {
@@ -1462,20 +1558,26 @@ class Workbook {
                 }
             }
         });
+
         return Number.parseFloat(finalWidth);
     }
+
     getWidthMergeCell(mergeCell, sheet) {
         var self = this;
         var mergeWidth = 0;
         var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartCol = self.charToNum(self.splitRef(mergeRange.start).col), mergeEndCol = self.charToNum(self.splitRef(mergeRange.end).col);
+        
         for (let i = mergeStartCol; i < mergeEndCol + 1; i++) {
             mergeWidth += self.getWidthCell(i, sheet);
         }
+        
         return mergeWidth;
     }
+
     getHeightCell(numRow, sheet) {
         var defaultHight = sheet.root.find("sheetFormatPr").attrib["defaultRowHeight"];
         var finalHeight = defaultHight;
+        
         sheet.root.findall("sheetData/row").forEach(row => {
             if (numRow == row.attrib["r"]) {
                 if (row.attrib["ht"] != undefined) {
@@ -1483,31 +1585,39 @@ class Workbook {
                 }
             }
         });
+
         return Number.parseFloat(finalHeight);
     }
+
     getHeightMergeCell(mergeCell, sheet) {
         var self = this;
         var mergeHeight = 0;
         var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
+        
         for (let i = mergeStartRow; i < mergeEndRow + 1; i++) {
             mergeHeight += self.getHeightCell(i, sheet);
         }
+        
         return mergeHeight;
     }
+
     /**
 	 * @param {{ attrib: { ref: any; }; }} mergeCell
 	 */
     getNbRowOfMergeCell(mergeCell) {
         var self = this;
         var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
+        
         return mergeEndRow - mergeStartRow + 1;
     }
+
     /**
 	 * @param {number} pixels
 	 */
     pixelsToEMUs(pixels) {
         return Math.round(pixels * 914400 / 96);
     }
+
     /**
 	 * @param {number} width
 	 */
@@ -1522,6 +1632,7 @@ class Workbook {
         // http://lcorneliussen.de/raw/dashboards/ooxml/
         return this.pixelsToEMUs(width * 7.625579987895905);
     }
+
     /**
 	 * @param {number} height
 	 */
@@ -1529,6 +1640,7 @@ class Workbook {
         // TODO : need to be verify
         return Math.round(height / 72 * 914400);
     }
+
     /**
      * Find max file id.
      * @param {RegExp} fileNameRegex 
@@ -1538,28 +1650,36 @@ class Workbook {
     findMaxFileId(fileNameRegex, idRegex) {
         var self = this;
         var files = self.archive.file(fileNameRegex);
-        var maxid = files.reduce(function (p, c) {
+
+        var maxid = files.reduce((p, c) => {
             const num = parseInt(idRegex.exec(c.name)[1]);
-            if (p == null) {
+
+            if (p == null)
                 return num;
-            }
+
             return p > num ? p : num;
         }, 0);
+
         maxid++;
+
         return maxid;
     }
+
     cellInMergeCells(cell, mergeCell) {
         var self = this;
         var cellCol = self.charToNum(self.splitRef(cell.attrib.r).col);
         var cellRow = self.splitRef(cell.attrib.r).row;
         var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartCol = self.charToNum(self.splitRef(mergeRange.start).col), mergeEndCol = self.charToNum(self.splitRef(mergeRange.end).col), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
+        
         if (cellCol >= mergeStartCol && cellCol <= mergeEndCol) {
             if (cellRow >= mergeStartRow && cellRow <= mergeEndRow) {
                 return true;
             }
         }
+
         return false;
     }
+
     /**
 	 * @param {string} str
 	 */
@@ -1570,16 +1690,21 @@ class Workbook {
             '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
             '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
             '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+
         return !!pattern.test(str);
     }
+
     toArrayBuffer(buffer) {
         var ab = new ArrayBuffer(buffer.length);
         var view = new Uint8Array(ab);
+
         for (var i = 0; i < buffer.length; ++i) {
             view[i] = buffer[i];
         }
+
         return ab;
     }
+
     imageToBuffer(imageObj) {
         /**
          * Check if the buffer image is supported by the library before return it
@@ -1618,20 +1743,27 @@ class Workbook {
                 }
             }
         }
+
         throw new TypeError(`imageObj type is not supported : ${typeof (imageObj)}`);
     }
+
     findMaxId(element, tag, attr, idRegex) {
         var maxId = 0;
+
         element.findall(tag).forEach((element) => {
             var match = idRegex.exec(element.attrib[attr]);
+            
             if (match == null) {
                 throw new Error("Can not find the id!");
             }
+
             var cid = parseInt(match[1]);
+
             if (cid > maxId) {
                 maxId = cid;
             }
         });
+
         return ++maxId;
     }
 }
