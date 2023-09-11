@@ -3,18 +3,6 @@
 This module provides a means of generating "real" Excel reports (i.e. not CSV
 files) in NodeJS applications.
 
-The basic principle is this: You create a template in Excel. This can be
-formatted as you wish, contain formulae etc. In this file, you put placeholders
-using a specific syntax (see below). In code, you build a map of placeholders
-to values and then load the template, substitute the placeholders for the
-relevant values, and generate a new .xlsx file that you can then serve to the
-user.
-
-Placeholders are inserted in cells in a spreadsheet. It does not matter how
-those cells are formatted, so e.g. it is OK to insert a placeholder (which is
-text content) into a cell formatted as a number or currecy or date, if you
-expect the placeholder to resolve to a number or currency or date.
-
 ## Quick example
 
 To make this magic happen, you need some code like this:
@@ -25,15 +13,9 @@ const fs = require('fs');
 
 const template = new XlsxTemplate();
 
-const filename_in = path.join(__dirname, 'templates', 'template1.xlsx');
+await template.loadFile('./template.xlsx');
 
-await template.loadFile(filename_in);
-
-// Replacements take place on first sheet
-let sheet_id = 1;
-
-// Set up some placeholder values matching the placeholders in the template
-let data = {
+await template.substitute(1, {
 	extractDate: new Date(),
 	dates: [ 
 		new Date('2013-06-01'), 
@@ -44,18 +26,11 @@ let data = {
 		{ name: 'John Smith', age: 20 },
 		{ name: 'Bob Johnson', age: 22 }
 	]
-};
+});
 
-// Perform substitution
-await template.substitute(sheet_id, data);
-
-// Get binary data
 let buffer_modify = template.generate();
 
-// Save file
-const filename_out = path.join(__dirname, 'output', 'template1_output.xlsx');
-
-fs.writeFileSync(filename_out, buffer_modify);
+fs.writeFileSync('./output.xlsx', buffer_modify);
 ```
 
 ### Scalars
