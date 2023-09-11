@@ -1166,19 +1166,21 @@ class Workbook {
 
 						// Credit: kennycreeper - Fix merge cells style, mirror-ru: some fixes
 						if (mergeCell) {
-							let mergeRange  = self.splitRange(mergeCell.attrib.ref);
-							let mergeStart  = self.splitRef(mergeRange.start);
-							let mergeEnd    = self.splitRef(mergeRange.end);
-							let templateRow = self.sheet.root.findall('sheetData/row').find(r => r.attrib.r === mergeStart.row);
-							
+							let mergeRange    = self.splitRange(mergeCell.attrib.ref);
+							let mergeStart    = self.splitRef(mergeRange.start);
+							let mergeEnd      = self.splitRef(mergeRange.end);
+							let templateRow   = self.sheet.root.findall('sheetData/row').find(r => r.attrib.r === mergeStart.row);	
+
 							for (let colNum = self.charToNum(mergeStart.col); colNum < self.charToNum(mergeEnd.col); colNum++) {
-								const templateCell = templateRow.getItem(colNum);
+								const templateCell = templateRow.find(`c[@r="${self.numToChar(colNum + 1)}${mergeStart.row}"]`);
+
+								if(templateCell) {
+									const cell = self.cloneElement(templateCell);
+									
+									cell.attrib.r = self.joinRef({ row: newRow.attrib.r, col: self.numToChar(colNum + 1) });
 								
-								const cell = self.cloneElement(templateCell);
-								
-								cell.attrib.r = self.joinRef({ row: newRow.attrib.r, col: self.numToChar(colNum + 1) });
-								
-								newRow.append(cell);
+								 	newRow.append(cell);
+								}
 							}
 						}
 					}
