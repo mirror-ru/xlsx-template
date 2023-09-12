@@ -92,7 +92,7 @@ Given data
 ```js
 let data = { 
 	extractDates: [ 'Jun-01-2022', 'Jun-01-2023' ]
-}
+};
 ```
 
 which will be applied to following template
@@ -147,7 +147,7 @@ Given data
 ```js
 let data = { 
 	imageName: 'helloImage.jpg' 
-}
+};
 ```  
 
 You can insert a list of images with   
@@ -162,7 +162,7 @@ let data = {
 		{ name : 'helloImage1.jpg' }, 
 		{ name : 'helloImage2.jpg' } 
 	]
-}
+};
 ``` 
 
 Supported image format in given data : 
