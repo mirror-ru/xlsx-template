@@ -12,11 +12,9 @@ files) in NodeJS applications.
 $ npm i xlsx-template-next
 ```
 
-## Quick example
-
-To make this magic happen, you need some code like this:
-
-```
+## Basic usage
+### Read - Templating - Write
+```js
 const XlsxTemplate = require('xlsx-template');
 const fs = require('fs');
 
