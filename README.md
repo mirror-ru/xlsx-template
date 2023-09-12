@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/xlsx-template-next.svg)](https://badge.fury.io/js/xlsx-template-next) ![Downloads](https://img.shields.io/npm/dm/xlsx-template-next.svg)
 
-This module provides a means of generating "real" Excel reports (i.e. not CSV
+This module provides a means of generating Excel reports (i.e. not CSV
 files) in NodeJS applications.
 
 ## Installation
@@ -14,16 +14,43 @@ $ npm i xlsx-template-next
 
 ## Basic usage
 
-To make this magic happen, you need some code like this:
+Loading a document by filename:
 ```js
-const XlsxTemplate = require('xlsx-template-next');
-const fs = require('fs');
+import XlsxTemplate from 'xlsx-template-next'
+import fs from 'fs'
 
 const template = new XlsxTemplate();
 
-await template.loadFile('./template.xlsx');
+await template.load('./template.xlsx');
 
-await template.substitute(1, {
+await template.process(1, {
+	extractDate: new Date(),
+	dates: [ 
+		new Date('2013-06-01'), 
+		new Date('2013-06-02'), 
+		new Date('2013-06-03')
+	],
+	people: [
+		{ name: 'John Smith', age: 20 },
+		{ name: 'Bob Johnson', age: 22 }
+	]
+});
+
+fs.writeFileSync('./output.xlsx', await template.build());
+```
+
+Loading a document from buffer:
+```js
+import XlsxTemplate from 'xlsx-template-next'
+import fs from 'fs'
+
+const template = new XlsxTemplate();
+
+const buffer = fs.readFileSync('./template.xlsx');
+
+await template.load(buffer);
+
+await template.process(1, {
 	extractDate: new Date(),
 	dates: [ 
 		new Date('2013-06-01'), 
@@ -62,7 +89,11 @@ For example:
 
 Given data
 
-    let data = { extractDates: [ 'Jun-01-2022', 'Jun-01-2023' ]}
+```js
+let data = { 
+	extractDates: [ 'Jun-01-2022', 'Jun-01-2023' ]
+}
+```
 
 which will be applied to following template
 
@@ -113,7 +144,11 @@ You can insert images with
 
 Given data
 
-    let data = { imageName: 'helloImage.jpg' }
+```js
+let data = { 
+	imageName: 'helloImage.jpg' 
+}
+```  
 
 You can insert a list of images with   
 
@@ -121,29 +156,43 @@ You can insert a list of images with
 
 Given data
 
-    let data = { images: [ { name : 'helloImage1.jpg' }, { name : 'helloImage2.jpg' } ]}
+```js
+let data = { 
+	images: [ 
+		{ name : 'helloImage1.jpg' }, 
+		{ name : 'helloImage2.jpg' } 
+	]
+}
+``` 
 
 Supported image format in given data : 
 - Base64 string
 - Base64 Buffer
 - Absolute path file
 - relative path file (absolute is prior to relative in test)
-- URL : TODO
 
 You can pass imageRootPath option for setting the root folder for your images.  
 
-    let option = { imageRootPath: '/path/to/your/image/dir' }  
-    ...  
-    const template = new XlsxTemplate(option);
+```js
+let option = { 
+	imageRootPath: '/path/to/your/image/dir' 
+};
+///...  
+const template = new XlsxTemplate(option);
+```
 
 If the image Placeholders is in standard cell, image is insert normaly  
 If the image Placeholders is in merge cell, image feet (at the best) the size of the merge cell.
 
 You can pass imageRatio option for adjust the ratio image (in percent and for standard cell - not applied on merge cell)
- 
-    let option = { imageRatio: 75.4 }  
-    ...  
-    const template = new XlsxTemplate(option);
+
+```js
+let option = { 
+	imageRatio: 75.4 
+};  
+///...  
+const template = new XlsxTemplate(option);
+```
 
 At this stage, `data` is a string blob representing the compressed archive that
 is the `.xlsx` file (that's right, a `.xlsx` file is a zip file of XML files,

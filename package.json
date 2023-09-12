@@ -1,6 +1,6 @@
 {
   "name": "xlsx-template-next",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Generate .xlsx (Excel) files from templates built in Excel",
   "keywords": [
     "xlsx",
@@ -40,7 +40,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/optilude/xlsx-template/raw/master/LICENSE"
+      "url": "http://github.com/optilude/xlsx-template-next/raw/master/LICENSE"
     }
   ],
   "jest": {

@@ -45,6 +45,10 @@ declare class Workbook {
      */
     _rebuild(): void;
     /**
+     * Load document from file or from buffer (auto-detection)
+     */
+    load(value: any): Promise<void>;
+    /**
      * Load a .xlsx file from filename
      */
     loadFile(filename: any): Promise<void>;
@@ -56,7 +60,17 @@ declare class Workbook {
      * Interpolate values for all the sheets using the given substitutions
      * (an object).
      */
+    processAll(substitutions: any): Promise<void>;
+    /**
+     * Interpolate values for all the sheets using the given substitutions
+     * (an object).
+     */
     substituteAll(substitutions: any): Promise<void>;
+    /**
+     * Interpolate values for the sheet with the given number (1-based) or
+     * name (if a string) using the given substitutions (an object).
+     */
+    process(sheetName: any, substitutions: any): Promise<void>;
     /**
      * Interpolate values for the sheet with the given number (1-based) or
      * name (if a string) using the given substitutions (an object).

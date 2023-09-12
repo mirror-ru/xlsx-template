@@ -25,7 +25,7 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
 			expect(template.sharedStrings).toEqual([
 				'Name', 'Role', 'Plan table', '${table:planData.name}',
@@ -40,7 +40,7 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
 			template.replaceString('Plan table', 'The plan');
 
@@ -57,9 +57,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				extractDate: new Date('2013-01-02'),
 				revision: 10,
 				dates: [
@@ -94,6 +94,7 @@ describe('CRUD operations', () => {
 
 			// extract date placeholder - interpolated into string referenced at B4
 			expect(sheet1.find("./sheetData/row/c[@r='B4']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='B4']/v").text, 10)
@@ -110,18 +111,23 @@ describe('CRUD operations', () => {
 
 			// planData placeholder - added rows and cells
 			expect(sheet1.find("./sheetData/row/c[@r='B7']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='B7']/v").text, 10)
 				].find('t').text
 			).toEqual('John Smith');
+
 			expect(sheet1.find("./sheetData/row/c[@r='B8']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='B8']/v").text, 10)
 				].find('t').text
 			).toEqual('James Smith');
+
 			expect(sheet1.find("./sheetData/row/c[@r='B9']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='B9']/v").text, 10)
@@ -129,17 +135,21 @@ describe('CRUD operations', () => {
 			).toEqual('Jim Smith');
 
 			expect(sheet1.find("./sheetData/row/c[@r='C7']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='C7']/v").text, 10)
 				].find('t').text
 			).toEqual('Developer');
+
 			expect(sheet1.find("./sheetData/row/c[@r='C8']").attrib.t).toEqual('s');
+
 			expect(
 				sharedStrings.findall('./si')[
 					parseInt(sheet1.find("./sheetData/row/c[@r='C8']/v").text, 10)
 				].find('t').text
 			).toEqual('Analyst');
+
 			expect(sheet1.find("./sheetData/row/c[@r='C9']").attrib.t).toEqual('s');
 			expect(
 				sharedStrings.findall('./si')[
@@ -167,10 +177,12 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
-				demo: { extractDate: new Date('2013-01-02') },
+			await template.process(1, {
+				demo: { 
+					extractDate: new Date('2013-01-02') 
+				},
 				revision: 10,
 				dates: [new Date('2013-01-01'), new Date('2013-01-02'), new Date('2013-01-03')],
 				planData: [
@@ -273,9 +285,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't3.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				demo: { 
 					extractDate: new Date('2013-01-02') 
 				},
@@ -330,9 +342,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				demo: { 
 					extractDate: new Date('2013-01-02') 
 				},
@@ -402,9 +414,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-cols.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				emptyCols: [],
 				multiCols: [ 'one', 'two' ],
 				singleCols: [ 10 ]
@@ -449,9 +461,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-tables.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				ages: [
 					{ name: 'John', age: 10 }, 
 					{ name: 'Bob', age: 2 }
@@ -597,9 +609,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-hyperlinks.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				email: 'john@bob.com',
 				subject: 'hello',
 				url: 'http://www.google.com',
@@ -624,9 +636,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-named-tables.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				ages: 
 				[
 					{ 
@@ -698,9 +710,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'template.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				people: [
 					{ name: 'John Smith', age: 55 },
 					{ name: 'John Doe', age: 35 }
@@ -713,9 +725,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-formula.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				data: [
 					{ name: 'A', quantity: 10, unitCost: 3 },
 					{ name: 'B', quantity: 15, unitCost: 5 },
@@ -741,9 +753,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'gdocs.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				planData: [
 					{ name: 'A', role: 'Role 1' },
 					{ name: 'B', role: 'Role 2' },
@@ -764,9 +776,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-array.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, {
+			await template.process(1, {
 				data: [
 					'First row',
 					{ name: 'B' },
@@ -792,9 +804,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'test-nested-arrays.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, { 
+			await template.process(1, { 
 				sales: [ 
 					{ 
 						payments: [ 123 ] 
@@ -824,9 +836,9 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
-			await template.substitute(1, { 
+			await template.process(1, { 
 				demo: { 
 					extractDate: new Date('2013-01-02') 
 				},
@@ -879,10 +891,10 @@ describe('CRUD operations', () => {
 
 			const filename_in = path.join(__dirname, 'templates', 'multple-sheets-arrays.xlsx');
 
-			await template.loadFile(filename_in);
+			await template.load(filename_in);
 
 			for (let sheetNumber = 1; sheetNumber <= 2; sheetNumber++) {		
-				await template.substitute(sheetNumber, {
+				await template.process(sheetNumber, {
 					page: 'page: ' + sheetNumber,
 					sheetNumber
 				});

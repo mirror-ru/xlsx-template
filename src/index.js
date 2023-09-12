@@ -175,7 +175,7 @@ class Workbook {
 				item.attrib.Id = 'rId' + (index + 1);
 			});
 
-		self.workbook.findall("sheets/sheet").forEach((item, index) => {
+		self.workbook.findall('sheets/sheet').forEach((item, index) => {
 			item.attrib['r:id'] = 'rId' + (index + 1);
 			item.attrib.sheetId = (index + 1).toString();
 		});
@@ -183,6 +183,20 @@ class Workbook {
 		self.archive.file(self.prefix + '/' + '_rels' + '/' + path.basename(self.workbookPath) + '.rels', etree.tostring(self.workbookRels));
 		self.archive.file(self.workbookPath, etree.tostring(self.workbook));
 		self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
+	}
+
+	/**
+	 * Load document from file or from buffer (auto-detection)
+	 */
+	async load(value) {
+		if(typeof value === 'string') 
+		{
+			await this.loadFile(value);
+		}
+		else
+		{
+			await this.loadTemplate(value);
+		}
 	}
 
 	/**
@@ -257,14 +271,28 @@ class Workbook {
 	 * Interpolate values for all the sheets using the given substitutions
 	 * (an object).
 	 */
-	async substituteAll(substitutions) {
-		var self = this;
+	async processAll(substitutions) {
+		await this.substituteAll(substitutions);
+	}
 
-		var sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
+	/**
+	 * Interpolate values for all the sheets using the given substitutions
+	 * (an object).
+	 */
+	async substituteAll(substitutions) {
+		const sheets = this.loadSheets(this.prefix, this.workbook, this.workbookRels);
 
 		for(const sheet of sheets) {
-			await self.substitute(sheet.id, substitutions);
+			await this.substitute(sheet.id, substitutions);
 		}
+	}
+
+	/**
+	 * Interpolate values for the sheet with the given number (1-based) or
+	 * name (if a string) using the given substitutions (an object).
+	 */
+	async process(sheetName, substitutions) {
+		await this.substitute(sheetName, substitutions);
 	}
 
 	/**
