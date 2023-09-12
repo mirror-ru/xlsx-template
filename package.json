@@ -1,6 +1,6 @@
 {
   "name": "xlsx-template-next",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Generate .xlsx (Excel) files from templates built in Excel",
   "keywords": [
     "xlsx",
