@@ -39,6 +39,8 @@ await template.substitute(1, {
 fs.writeFileSync('./output.xlsx', await template.build());
 ```
 
+## Tags
+
 ### Scalars
 
 Simple placholders take the format `${name}`. Here, `name` is the name of a
