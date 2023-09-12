@@ -16,7 +16,7 @@ $ npm i xlsx-template-next
 
 To make this magic happen, you need some code like this:
 ```js
-const XlsxTemplate = require('xlsx-template');
+const XlsxTemplate = require('xlsx-template-next');
 const fs = require('fs');
 
 const template = new XlsxTemplate();
