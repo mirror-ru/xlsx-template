@@ -1,7 +1,16 @@
 # XLSX Template Next
 
+[![npm version](https://badge.fury.io/js/xlsx-template-next.svg)](https://badge.fury.io/js/xlsx-template-next) ![Downloads](https://img.shields.io/npm/dm/xlsx-template-next.svg)
+
 This module provides a means of generating "real" Excel reports (i.e. not CSV
 files) in NodeJS applications.
+
+## Installation
+
+```sh
+# with npm
+$ npm i xlsx-template-next
+```
 
 ## Quick example
 
