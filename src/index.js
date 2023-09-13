@@ -77,18 +77,17 @@ class Workbook {
 	 * Delete unused sheets if needed
 	 */
 	async deleteSheet(sheetName) {
-		var self = this;
-		var sheet = await self.loadSheet(sheetName);
+		var sheet = await this.loadSheet(sheetName);
 
-		var sh = self.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
-		self.workbook.find('sheets').remove(sh);
+		var sh = this.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
+		this.workbook.find('sheets').remove(sh);
 
-		var rel = self.workbookRels.find("Relationship[@Id='" + sh.attrib['r:id'] + "']");
-		self.workbookRels.remove(rel);
+		var rel = this.workbookRels.find("Relationship[@Id='" + sh.attrib['r:id'] + "']");
+		this.workbookRels.remove(rel);
 
-		self._rebuild();
+		this._rebuild();
 
-		return self;
+		return this;
 	}
 
 	/**
@@ -143,10 +142,9 @@ class Workbook {
 	_rebuild() {
 		//each <sheet> 'r:id' attribute in '\xl\workbook.xml'
 		//must point to correct <Relationship> 'Id' in xl\_rels\workbook.xml.rels
-		var self = this;
 		var order = ['worksheet', 'theme', 'styles', 'sharedStrings'];
 
-		self.workbookRels.findall("*")
+		this.workbookRels.findall("*")
 			.sort((rel1, rel2) => {
 				var index1 = order.indexOf(path.basename(rel1.attrib.Type));
 				var index2 = order.indexOf(path.basename(rel2.attrib.Type));
@@ -175,14 +173,14 @@ class Workbook {
 				item.attrib.Id = 'rId' + (index + 1);
 			});
 
-		self.workbook.findall('sheets/sheet').forEach((item, index) => {
+		this.workbook.findall('sheets/sheet').forEach((item, index) => {
 			item.attrib['r:id'] = 'rId' + (index + 1);
 			item.attrib.sheetId = (index + 1).toString();
 		});
 
-		self.archive.file(self.prefix + '/' + '_rels' + '/' + path.basename(self.workbookPath) + '.rels', etree.tostring(self.workbookRels));
-		self.archive.file(self.workbookPath, etree.tostring(self.workbook));
-		self.sheets = self.loadSheets(self.prefix, self.workbook, self.workbookRels);
+		this.archive.file(this.prefix + '/' + '_rels' + '/' + path.basename(this.workbookPath) + '.rels', etree.tostring(this.workbookRels));
+		this.archive.file(this.workbookPath, etree.tostring(this.workbook));
+		this.sheets = this.loadSheets(this.prefix, this.workbook, this.workbookRels);
 	}
 
 	/**
@@ -744,8 +742,6 @@ class Workbook {
 
 	// Move TwoCellAnchor tag images after fromRow of nbRow row
 	_moveTwoCellAnchor(drawingElement, fromRow, nbRow) {
-		var self = this;
-
 		var _moveImage = (drawingElement, fromRow, nbRow) => {
 			var from = Number.parseInt(drawingElement.find('xdr:from').find('xdr:row').text, 10) + Number.parseInt(nbRow, 10);
 			drawingElement.find('xdr:from').find('xdr:row').text = from;
@@ -754,7 +750,7 @@ class Workbook {
 			drawingElement.find('xdr:to').find('xdr:row').text = to;
 		};
 
-		if (self.option['moveSameLineImages']) {
+		if (this.option['moveSameLineImages']) {
 			if (parseInt(drawingElement.find('xdr:from').find('xdr:row').text) + 1 >= fromRow)
 				_moveImage(drawingElement, fromRow, nbRow);
 		} else {
@@ -765,12 +761,10 @@ class Workbook {
 
 	// Load tables for a given sheet
 	async loadTables(sheet, sheetFilename) {
-		let self = this;
-
 		let sheetDirectory = path.dirname(sheetFilename); 
 		let sheetName = path.basename(sheetFilename);
 		let relsFilename = sheetDirectory + '/' + '_rels' + '/' + sheetName + '.rels'; 
-		let relsFile = self.archive.file(relsFilename); 
+		let relsFile = this.archive.file(relsFilename); 
 
 		let tables = [];
 
@@ -784,9 +778,9 @@ class Workbook {
 		{
 			let relationshipId = tablePart.attrib['r:id'];
 			let target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target;
-			let tableFilename = target.replace('..', self.prefix);
+			let tableFilename = target.replace('..', this.prefix);
 
-			let parseTextTableFilename = await self.archive.file(tableFilename).async('string');
+			let parseTextTableFilename = await this.archive.file(tableFilename).async('string');
 			let tableTree = etree.parse(parseTextTableFilename);
 
 			tables.push({ filename: tableFilename, root: tableTree.getroot() });
@@ -1638,8 +1632,7 @@ class Workbook {
 	 * @param {{ attrib: { ref: any; }; }} mergeCell
 	 */
 	getNbRowOfMergeCell(mergeCell) {
-		var self = this;
-		var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
+		var mergeRange = this.splitRange(mergeCell.attrib.ref), mergeStartRow = this.splitRef(mergeRange.start).row, mergeEndRow = this.splitRef(mergeRange.end).row;
 		
 		return mergeEndRow - mergeStartRow + 1;
 	}
@@ -1681,8 +1674,7 @@ class Workbook {
 	 * @returns {number} 
 	 */
 	findMaxFileId(fileNameRegex, idRegex) {
-		var self = this;
-		var files = self.archive.file(fileNameRegex);
+		var files = this.archive.file(fileNameRegex);
 
 		var maxid = files.reduce((p, c) => {
 			const num = parseInt(idRegex.exec(c.name)[1]);
@@ -1699,10 +1691,9 @@ class Workbook {
 	}
 
 	cellInMergeCells(cell, mergeCell) {
-		var self = this;
-		var cellCol = self.charToNum(self.splitRef(cell.attrib.r).col);
-		var cellRow = self.splitRef(cell.attrib.r).row;
-		var mergeRange = self.splitRange(mergeCell.attrib.ref), mergeStartCol = self.charToNum(self.splitRef(mergeRange.start).col), mergeEndCol = self.charToNum(self.splitRef(mergeRange.end).col), mergeStartRow = self.splitRef(mergeRange.start).row, mergeEndRow = self.splitRef(mergeRange.end).row;
+		var cellCol = this.charToNum(this.splitRef(cell.attrib.r).col);
+		var cellRow = this.splitRef(cell.attrib.r).row;
+		var mergeRange = this.splitRange(mergeCell.attrib.ref), mergeStartCol = this.charToNum(this.splitRef(mergeRange.start).col), mergeEndCol = this.charToNum(this.splitRef(mergeRange.end).col), mergeStartRow = this.splitRef(mergeRange.start).row, mergeEndRow = this.splitRef(mergeRange.end).row;
 		
 		if (cellCol >= mergeStartCol && cellCol <= mergeEndCol) {
 			if (cellRow >= mergeStartRow && cellRow <= mergeEndRow)
