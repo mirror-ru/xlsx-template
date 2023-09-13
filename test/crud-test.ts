@@ -7,7 +7,7 @@
 
 'use strict';
 
-var XlsxTemplate   = require('../build');
+var ExcelTemplate   = require('../build');
 const fs           = require('fs');
 const path         = require('path');
 const etree        = require('elementtree');
@@ -18,10 +18,10 @@ function getSharedString(sharedStrings, sheet1, index) {
 
 describe('CRUD operations', () => {
 
-	describe('XlsxTemplate', () => {
+	describe('ExcelTemplate', () => {
 
 		it('can load data', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
@@ -36,7 +36,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('can write changed shared strings', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
@@ -53,7 +53,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('can substitute values and build a file', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't1.xlsx');
 
@@ -173,7 +173,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('can substitute values with descendant properties and build a file', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
@@ -281,7 +281,7 @@ describe('CRUD operations', () => {
 		});
 		
 		it('can substitute values when single item array contains an object and build a file', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't3.xlsx');
 
@@ -338,7 +338,7 @@ describe('CRUD operations', () => {
 		});
 		
 		it('can substitute values when single item array contains an object with sub array containing primatives and build a file', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
@@ -410,7 +410,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('moves columns left or right when filling lists', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-cols.xlsx');
 
@@ -457,7 +457,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('moves rows down when filling tables', async () =>  {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-tables.xlsx');
 
@@ -605,7 +605,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('replaces hyperlinks in sheet', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-hyperlinks.xlsx');
 
@@ -632,7 +632,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('moves named tables, named cells and merged cells', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-named-tables.xlsx');
 
@@ -706,7 +706,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('Correctly parse when formula in the file', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'template.xlsx');
 
@@ -721,7 +721,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('Correctly recalculate formula', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-formula.xlsx');
 
@@ -749,7 +749,7 @@ describe('CRUD operations', () => {
 		});
 		
 		it('File without dimensions works', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'gdocs.xlsx');
 
@@ -772,7 +772,7 @@ describe('CRUD operations', () => {
 		});
 		
 		it('Array indexing', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-array.xlsx');
 
@@ -800,7 +800,7 @@ describe('CRUD operations', () => {
 		});
 		
 		it('Arrays with single element', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'test-nested-arrays.xlsx');
 
@@ -832,7 +832,7 @@ describe('CRUD operations', () => {
 		});
 
 		it('will correctly fill cells on all rows where arrays are used to dynamically render multiple cells', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 't2.xlsx');
 
@@ -887,7 +887,7 @@ describe('CRUD operations', () => {
 	describe('Multiple sheets', () => {
 
 		it('Each sheet should take each name', async () => {
-			const template = new XlsxTemplate();
+			const template = new ExcelTemplate();
 
 			const filename_in = path.join(__dirname, 'templates', 'multple-sheets-arrays.xlsx');
 

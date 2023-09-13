@@ -16,10 +16,10 @@ $ npm i xlsx-template-next
 
 Loading a document by filename:
 ```js
-import XlsxTemplate from 'xlsx-template-next'
+import ExcelTemplate from 'xlsx-template-next'
 import fs from 'fs'
 
-const template = new XlsxTemplate();
+const template = new ExcelTemplate();
 
 await template.load('./template.xlsx');
 
@@ -41,10 +41,10 @@ fs.writeFileSync('./output.xlsx', await template.build());
 
 Loading a document from buffer:
 ```js
-import XlsxTemplate from 'xlsx-template-next'
+import ExcelTemplate from 'xlsx-template-next'
 import fs from 'fs'
 
-const template = new XlsxTemplate();
+const template = new ExcelTemplate();
 
 const buffer = fs.readFileSync('./template.xlsx');
 
@@ -178,7 +178,7 @@ let option = {
 	imageRootPath: '/path/to/your/image/dir' 
 };
 ///...  
-const template = new XlsxTemplate(option);
+const template = new ExcelTemplate(option);
 ```
 
 If the image Placeholders is in standard cell, image is insert normaly  
@@ -191,7 +191,7 @@ let option = {
 	imageRatio: 75.4 
 };  
 ///...  
-const template = new XlsxTemplate(option);
+const template = new ExcelTemplate(option);
 ```
 
 At this stage, `data` is a string blob representing the compressed archive that
