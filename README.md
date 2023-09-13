@@ -158,14 +158,14 @@ Given data
 
 ```js
 let data = { 
-	images: [ 
-		{ name : 'helloImage1.jpg' }, 
-		{ name : 'helloImage2.jpg' } 
-	]
+    images: [ 
+      { name: 'helloImage1.jpg' }, 
+      { name: 'helloImage2.jpg' } 
+    ]
 };
 ``` 
 
-Supported image format in given data : 
+Supported image format in given data: 
 - Base64 string
 - Base64 Buffer
 - Absolute path file
