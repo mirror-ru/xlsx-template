@@ -3,7 +3,7 @@
 /*global require, describe, before, it */
 'use strict';
 
-var ExcelTemplate = require('../build');
+var { ExcelTemplate } = require('../build');
 
 describe('Helpers', () => {
 

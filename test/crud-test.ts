@@ -7,10 +7,10 @@
 
 'use strict';
 
-var ExcelTemplate   = require('../build');
-const fs           = require('fs');
-const path         = require('path');
-const etree        = require('elementtree');
+var { ExcelTemplate } = require('../build');
+const fs = require('fs');
+const path = require('path');
+const etree = require('elementtree');
 
 function getSharedString(sharedStrings, sheet1, index) {
 	return sharedStrings.findall('./si')[ parseInt(sheet1.find("./sheetData/row/c[@r='" + index + "']/v").text, 10) ].find('t').text;

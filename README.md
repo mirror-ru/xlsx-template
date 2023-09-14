@@ -16,7 +16,7 @@ $ npm i xlsx-template-next
 
 Loading a document by filename:
 ```js
-import ExcelTemplate from 'xlsx-template-next'
+import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
 const template = new ExcelTemplate();
@@ -41,7 +41,7 @@ fs.writeFileSync('./output.xlsx', await template.build());
 
 Loading a document from buffer:
 ```js
-import ExcelTemplate from 'xlsx-template-next'
+import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
 const template = new ExcelTemplate();

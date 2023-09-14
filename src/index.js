@@ -43,7 +43,7 @@ var _get = function(obj, desc, defaultValue) {
 	return obj === undefined ? defaultValue : obj;
 }
 
-class Workbook {
+class ExcelTemplate {
 	/**
 	 * Create a new workbook. Either pass the raw data of a .xlsx file,
 	 * and call `loadTemplate()` later.
@@ -1761,4 +1761,4 @@ class Workbook {
 	}
 }
 
-module.exports = Workbook;
+module.exports = { ExcelTemplate };

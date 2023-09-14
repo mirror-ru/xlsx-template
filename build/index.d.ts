@@ -1,5 +1,4 @@
-export = Workbook;
-declare class Workbook {
+export class ExcelTemplate {
     /**
      * Create a new workbook. Either pass the raw data of a .xlsx file,
      * and call `loadTemplate()` later.
