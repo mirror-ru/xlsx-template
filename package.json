@@ -85,5 +85,6 @@
     "compile": "tsc",
     "test": "npm run compile && jest",
     "prepublishOnly": "npm run compile"
-  }
+  },
+  "readmeFilename": "README.md"
 }
