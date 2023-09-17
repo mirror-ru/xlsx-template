@@ -2,6 +2,7 @@
   "name": "xlsx-template-next",
   "version": "0.1.0",
   "description": "Generate .xlsx (Excel) files from templates built in Excel",
+  "homepage": "https://github.com/mirror-ru/xlsx-template-next",
   "keywords": [
     "xlsx",
     "excel",
@@ -33,6 +34,9 @@
     }
   ],
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mirror-ru/xlsx-template-next/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mirror-ru/xlsx-template-next.git"
@@ -40,7 +44,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/optilude/xlsx-template-next/raw/master/LICENSE"
+      "url": "http://github.com/mirror-ru/xlsx-template-next/raw/master/LICENSE"
     }
   ],
   "jest": {
