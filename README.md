@@ -11,6 +11,13 @@ files) in NodeJS applications.
 # with npm
 $ npm i xlsx-template-next
 ```
+## Basic template
+
+Template:
+![Template xlsx](https://raw.githubusercontent.com/mirror-ru/xlsx-template-next/master/images/before.png)
+
+Result:
+![Result process](https://raw.githubusercontent.com/mirror-ru/xlsx-template-next/master/images/after.png)
 
 ## Basic usage
 
@@ -19,24 +26,28 @@ Loading a document by filename:
 import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
-const template = new ExcelTemplate();
+async function main() {
+  const template = new ExcelTemplate();
 
-await template.load('./template.xlsx');
+  await template.load('./template.xlsx');
 
-await template.process(1, {
-	extractDate: new Date(),
-	dates: [ 
-		new Date('2013-06-01'), 
-		new Date('2013-06-02'), 
-		new Date('2013-06-03')
-	],
-	people: [
-		{ name: 'John Smith', age: 20 },
-		{ name: 'Bob Johnson', age: 22 }
-	]
-});
+  await template.process(1, {
+    extractDate: new Date(),
+    dates: [ 
+      new Date('2013-06-01'), 
+      new Date('2013-06-02'), 
+      new Date('2013-06-03')
+    ],
+    people: [
+      { name: 'John Smith', age: 20 },
+      { name: 'Bob Johnson', age: 22 }
+    ]
+  });
 
-fs.writeFileSync('./output.xlsx', await template.build());
+  fs.writeFileSync('./output.xlsx', await template.build());
+}
+
+main();
 ```
 
 Loading a document from buffer:
@@ -44,26 +55,30 @@ Loading a document from buffer:
 import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
-const template = new ExcelTemplate();
+async function main() {
+  const template = new ExcelTemplate();
 
-const buffer = fs.readFileSync('./template.xlsx');
+  const buffer = fs.readFileSync('./template.xlsx');
 
-await template.load(buffer);
+  await template.load(buffer);
 
-await template.process(1, {
-	extractDate: new Date(),
-	dates: [ 
-		new Date('2013-06-01'), 
-		new Date('2013-06-02'), 
-		new Date('2013-06-03')
-	],
-	people: [
-		{ name: 'John Smith', age: 20 },
-		{ name: 'Bob Johnson', age: 22 }
-	]
-});
+  await template.process(1, {
+    extractDate: new Date(),
+    dates: [ 
+      new Date('2013-06-01'), 
+      new Date('2013-06-02'), 
+      new Date('2013-06-03')
+    ],
+    people: [
+      { name: 'John Smith', age: 20 },
+      { name: 'Bob Johnson', age: 22 }
+    ]
+  });
 
-fs.writeFileSync('./output.xlsx', await template.build());
+  fs.writeFileSync('./output.xlsx', await template.build());
+}
+
+main();
 ```
 
 ## Tags
