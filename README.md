@@ -29,24 +29,24 @@ import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
 async function main() {
-  const template = new ExcelTemplate();
+	const template = new ExcelTemplate();
 
-  await template.load('./template.xlsx');
+	await template.load('./template.xlsx');
 
-  await template.process(1, {
-    extractDate: new Date(),
-    dates: [ 
-      new Date('2013-06-01'), 
-      new Date('2013-06-02'), 
-      new Date('2013-06-03')
-    ],
-    people: [
-      { name: 'John Smith', age: 20 },
-      { name: 'Bob Johnson', age: 22 }
-    ]
-  });
+	await template.process(1, {
+		extractDate: new Date(),
+		dates: [ 
+			new Date('2013-06-01'), 
+			new Date('2013-06-02'), 
+			new Date('2013-06-03')
+		],
+		people: [
+			{ name: 'John Smith', age: 20 },
+			{ name: 'Bob Johnson', age: 22 }
+		]
+	});
 
-  fs.writeFileSync('./output.xlsx', await template.build());
+	fs.writeFileSync('./output.xlsx', await template.build());
 }
 
 main();
@@ -58,26 +58,26 @@ import { ExcelTemplate } from 'xlsx-template-next'
 import fs from 'fs'
 
 async function main() {
-  const template = new ExcelTemplate();
+	const template = new ExcelTemplate();
 
-  const buffer = fs.readFileSync('./template.xlsx');
+	const buffer = fs.readFileSync('./template.xlsx');
 
-  await template.load(buffer);
+	await template.load(buffer);
 
-  await template.process(1, {
-    extractDate: new Date(),
-    dates: [ 
-      new Date('2013-06-01'), 
-      new Date('2013-06-02'), 
-      new Date('2013-06-03')
-    ],
-    people: [
-      { name: 'John Smith', age: 20 },
-      { name: 'Bob Johnson', age: 22 }
-    ]
-  });
+	await template.process(1, {
+		extractDate: new Date(),
+		dates: [ 
+			new Date('2013-06-01'), 
+			new Date('2013-06-02'), 
+			new Date('2013-06-03')
+		],
+		people: [
+			{ name: 'John Smith', age: 20 },
+			{ name: 'Bob Johnson', age: 22 }
+		]
+	});
 
-  fs.writeFileSync('./output.xlsx', await template.build());
+	fs.writeFileSync('./output.xlsx', await template.build());
 }
 
 main();
