@@ -13,10 +13,12 @@ $ npm i xlsx-template-next
 ```
 ## Basic template
 
-Template:
+From:
+
 ![Template xlsx](https://raw.githubusercontent.com/mirror-ru/xlsx-template-next/master/images/before.png)
 
-Result:
+To:
+
 ![Result process](https://raw.githubusercontent.com/mirror-ru/xlsx-template-next/master/images/after.png)
 
 ## Basic usage
