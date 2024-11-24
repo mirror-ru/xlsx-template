@@ -78,7 +78,7 @@ export class ExcelTemplate {
     /**
      * Build a new binary .xlsx file
      */
-    build(options: any): Promise<string | number[] | ArrayBuffer | Uint8Array | Blob | Buffer>;
+    build(options: any): Promise<string | number[] | ArrayBuffer | Uint8Array<ArrayBufferLike> | Blob | Buffer<ArrayBufferLike>>;
     writeSharedStrings(): Promise<void>;
     addSharedString(s: any): number;
     stringIndex(s: any): any;
@@ -193,7 +193,7 @@ export class ExcelTemplate {
      */
     isUrl(str: string): boolean;
     toArrayBuffer(buffer: any): ArrayBuffer;
-    imageToBuffer(imageObj: any): Buffer;
+    imageToBuffer(imageObj: any): Buffer<ArrayBufferLike>;
     findMaxId(element: any, tag: any, attr: any, idRegex: any): number;
 }
 import JSZip = require("jszip");
